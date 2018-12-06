@@ -3,6 +3,7 @@ import tkinter
 from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
+from tkinter import messagebox
 from files_management import *
 from definitions import *
 
@@ -11,35 +12,44 @@ from src.files_management import CONFIG_FILE
 GUI_VERSION = 0.1
 BUTTON_ENDING_ROW = 4
 
+def update_dict(Dictionary,Key,Value):
+        Dictionary[Key] = Value
+
+def show_filename_in_textbox(txtbox,filename):
+    txtbox.config(state=NORMAL)
+    txtbox.delete(1.0, END)
+    txtbox.insert(END, filename)
+    txtbox.config(state=DISABLED)
+
+
 def gui_build():
 
     files_form_fill_dict = dict()
 
     def action_open_config_file():
         filename = filedialog.askopenfilename()
-        config_file_textbox.config(state=NORMAL)
-        config_file_textbox.insert(END, filename)
-        config_file_textbox.config(state=DISABLED)
-        files_form_fill_dict[CONFIG_FILE] = filename
+        show_filename_in_textbox(config_file_textbox,filename)
+        update_dict(files_form_fill_dict, CONFIG_FILE, filename)
 
     def action_gem5_execute_file():
         filename = filedialog.askopenfilename()
-        gem5_exec_file_textbox.config(state=NORMAL)
-        gem5_exec_file_textbox.insert(END, filename)
-        gem5_exec_file_textbox.config(state=DISABLED)
+        show_filename_in_textbox(gem5_exec_file_textbox,filename)
         print(selected_debug_mode.get())
-        files_form_fill_dict[GEM5_EXECUTE_FILE] = filename
+        update_dict(files_form_fill_dict, GEM5_EXECUTE_FILE, filename)
 
     def action_output_file():
-        filename = filedialog.askopenfilename()
-        output_file_textbox.config(state=NORMAL)
-        output_file_textbox.insert(END, filename)
-        output_file_textbox.config(state=DISABLED)
-        files_form_fill_dict[OUTPUT_FILE] = filename
+        filename = filedialog.asksaveasfilename()
+        show_filename_in_textbox(output_file_textbox,filename)
+        update_dict(files_form_fill_dict,OUTPUT_FILE,filename)
 
+#############################
+#   R U N   M E T H O D     #
+#############################
     def action_run():
         if correctness_check(files_form_fill_dict):
             save_obj(files_form_fill_dict,SETTINGS_FILE)
+        else:
+            messagebox.showinfo("Running Error","One or more files are missing or invalid!")
         print(selected_debug_mode.get())
 
     if tkinter.TclVersion < 8.5:
@@ -120,12 +130,9 @@ def gui_build():
     # loading dictionary if existed
     if check_file_exist(SETTINGS_FILE):
         files_form_fill_dict = load_obj(SETTINGS_FILE)
-        config_file_textbox.config(state=NORMAL)
-        config_file_textbox.insert(END, files_form_fill_dict[CONFIG_FILE])
-        config_file_textbox.config(state=DISABLED)
-        gem5_exec_file_textbox.config(state=NORMAL)
-        gem5_exec_file_textbox.insert(END, files_form_fill_dict[GEM5_EXECUTE_FILE])
-        gem5_exec_file_textbox.config(state=DISABLED)
+        show_filename_in_textbox(config_file_textbox,files_form_fill_dict[CONFIG_FILE])
+        show_filename_in_textbox(gem5_exec_file_textbox,files_form_fill_dict[GEM5_EXECUTE_FILE])
+        show_filename_in_textbox(output_file_textbox,files_form_fill_dict[OUTPUT_FILE])
 
     window.mainloop()
 

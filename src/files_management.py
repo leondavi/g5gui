@@ -13,12 +13,17 @@ SETTINGS_FILE = os.path.join(os.pardir, "files_dict")
 
 
 def correctness_check(files_dictionary):
-    res = False if len(files_dictionary) < 2 else True
-    Q = check_file_ending("x.py","py")
+    res = False if len(files_dictionary) < 3 else True
     if CONFIG_FILE in files_dictionary.keys():
         res &= check_file_ending(files_dictionary[CONFIG_FILE],"py")
+    else:
+        return False
     if GEM5_EXECUTE_FILE in files_dictionary.keys():
         res &= files_dictionary[GEM5_EXECUTE_FILE].endswith("gem5.opt")
+    else:
+        return False
+    res = res if OUTPUT_FILE in files_dictionary.keys() else False
+
     return res
 
 # Inputs: filename and file type string without dot
