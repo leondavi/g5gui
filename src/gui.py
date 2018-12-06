@@ -7,8 +7,6 @@ from tkinter import messagebox
 from files_management import *
 from definitions import *
 
-from src.files_management import CONFIG_FILE
-
 GUI_VERSION = 0.1
 BUTTON_ENDING_ROW = 4
 
