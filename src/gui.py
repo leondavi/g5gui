@@ -4,9 +4,11 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
 from files_management import *
+from definitions import *
 
 from src.files_management import CONFIG_FILE
 
+GUI_VERSION = 0.1
 BUTTON_ENDING_ROW = 4
 
 def gui_build():
@@ -48,7 +50,7 @@ def gui_build():
 
     window = Tk()
 
-    window.title("Welcome to gem5 GUI app")
+    window.title("gem5 GUI app ver-"+str(GUI_VERSION))
 
     window.geometry('800x500')
     window.resizable(FALSE, FALSE)
@@ -74,27 +76,26 @@ def gui_build():
 
     selected_debug_mode = IntVar()
     RADIO_BUTTON_WIDTH = 10
-    rbutt_acitivty = Radiobutton(window, width=RADIO_BUTTON_WIDTH, text="Activity", value=1,
-                                 variable=selected_debug_mode)
-    rbutt_branch = Radiobutton(window, width=RADIO_BUTTON_WIDTH, text="Branch", value=2, variable=selected_debug_mode)
-    rbutt_minorcpu = Radiobutton(window, width=RADIO_BUTTON_WIDTH, text="MinorCPU", value=3,
-                                 variable=selected_debug_mode)
-    rbutt_decode = Radiobutton(window, width=RADIO_BUTTON_WIDTH, text="Decode", value=4, variable=selected_debug_mode)
+
+    radio_buttons_vec = []
+    for index in range (0,len(DebugModes)):
+        radio_buttons_vec.append(Radiobutton(window, width=RADIO_BUTTON_WIDTH, text=DebugModes[index], value=index, variable=selected_debug_mode))
 
     rows_starting_idx = BUTTON_ENDING_ROW
-    columns_starting_idx = 0
-    SeperatorLabel.grid(row=rows_starting_idx, column=0)
+    SeperatorLabel.grid(row=rows_starting_idx, column=0) #Seperator
     rows_starting_idx += 1
-    DebugModesLabel.grid(row=rows_starting_idx, column=0)
+    DebugModesLabel.grid(row=rows_starting_idx, column=0) #Debug mode title
     rows_starting_idx += 1
     SeperatorLabel2.grid(row=rows_starting_idx, column=0)
     rows_starting_idx += 1
-    rbutt_acitivty.grid(row=rows_starting_idx, column=0)
-    rbutt_branch.grid(row=rows_starting_idx, column=1)
-    rows_starting_idx += 1
-    rbutt_minorcpu.grid(row=rows_starting_idx, column=0)
-    rbutt_decode.grid(row=rows_starting_idx, column=1)
-    rows_starting_idx += 1
+
+    cols_idx = 0
+    #Radio buttons locations set:
+    for idx,radiobutt in enumerate(radio_buttons_vec):
+        radiobutt.grid(row=rows_starting_idx, column=cols_idx)
+        if (idx % 2 == 1):
+            rows_starting_idx+=1
+        cols_idx = (cols_idx + 1) % 2
 
     ######### Buttons ##########
 
