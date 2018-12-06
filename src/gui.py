@@ -1,3 +1,4 @@
+import os
 import tkinter
 from tkinter import *
 from tkinter import filedialog
@@ -8,9 +9,9 @@ from src.files_management import CONFIG_FILE
 
 BUTTON_ENDING_ROW = 4
 
-files_form_fill_dict = dict()
-
 def gui_build():
+
+    files_form_fill_dict = dict()
 
     def action_open_config_file():
         filename = filedialog.askopenfilename()
@@ -32,16 +33,18 @@ def gui_build():
         output_file_textbox.config(state=NORMAL)
         output_file_textbox.insert(END, filename)
         output_file_textbox.config(state=DISABLED)
-        files_form_fill_dict[OUTPU_FILE] = filename
+        files_form_fill_dict[OUTPUT_FILE] = filename
 
     def action_run():
-        correctness_check(files_form_fill_dict)
+        if correctness_check(files_form_fill_dict):
+            save_obj(files_form_fill_dict,SETTINGS_FILE)
         print(selected_debug_mode.get())
 
     if tkinter.TclVersion < 8.5:
         print("Please install python3-tk using apt install.")
         print("Exiting")
         return
+
 
     window = Tk()
 
@@ -112,6 +115,16 @@ def gui_build():
     SeperatorLabel_exit_run.grid(row=49)
     button_run.grid(row=50, column=30)
     button_exit.grid(row=50,column=0)
+
+    # loading dictionary if existed
+    if check_file_exist(SETTINGS_FILE):
+        files_form_fill_dict = load_obj(SETTINGS_FILE)
+        config_file_textbox.config(state=NORMAL)
+        config_file_textbox.insert(END, files_form_fill_dict[CONFIG_FILE])
+        config_file_textbox.config(state=DISABLED)
+        gem5_exec_file_textbox.config(state=NORMAL)
+        gem5_exec_file_textbox.insert(END, files_form_fill_dict[GEM5_EXECUTE_FILE])
+        gem5_exec_file_textbox.config(state=DISABLED)
 
     window.mainloop()
 
