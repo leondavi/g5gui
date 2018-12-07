@@ -13,6 +13,8 @@ from tkinter import messagebox
 from files_management import *
 from definitions import *
 
+from consoleCommands import ConsoleDisplay
+
 GUI_VERSION = 0.1
 BUTTON_ENDING_ROW = 4
 
@@ -56,7 +58,7 @@ def gui_build():
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_build():
-
+        console_disp.subprocess_cmd(files_form_fill_dict[BUILD_DIR], "ls -l")
         return 0
 
 #############################
@@ -178,6 +180,8 @@ def gui_build():
         show_filename_in_textbox(gem5_exec_file_textbox,files_form_fill_dict.get(GEM5_EXECUTE_FILE,""))
         show_filename_in_textbox(output_file_textbox,files_form_fill_dict.get(OUTPUT_FILE,""))
         show_filename_in_textbox(gem5_build_dir_textbox, files_form_fill_dict.get(BUILD_DIR,""))
+
+    console_disp = ConsoleDisplay(bottom_frame,console_output_textbox)
 
     window.mainloop()
 
