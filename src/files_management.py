@@ -4,6 +4,7 @@ import os
 CONFIG_FILE = 1
 GEM5_EXECUTE_FILE = 2
 OUTPUT_FILE = 3
+BUILD_DIR = 4
 
 SETTINGS_FILE = os.path.join(os.pardir, "files_dict")
 
