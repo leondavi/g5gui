@@ -5,11 +5,12 @@ try:
 except ImportError:
     import tkinter as tk # Python 3
     from queue import Queue, Empty # Python 3
+    from tkinter import *
+    from tkinter import filedialog
+    from tkinter.ttk import *
+    from tkinter import messagebox
 
-from tkinter import *
-from tkinter import filedialog
-from tkinter.ttk import *
-from tkinter import messagebox
+
 from files_management import *
 from definitions import *
 
@@ -58,7 +59,10 @@ def gui_build():
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_build():
+        button_run['state'] = DISABLED
         console_disp.subprocess_cmd(files_form_fill_dict[BUILD_DIR], "ls -l")
+        button_run['state'] = NORMAL
+
         return 0
 
 #############################
@@ -76,7 +80,7 @@ def gui_build():
 
     window.title("gem5 GUI app ver-"+str(GUI_VERSION))
 
-    window.geometry('800x500')
+    window.geometry('800x600')
     window.resizable(FALSE, FALSE)
 
     top_frame = Frame(window,height=200)
@@ -95,7 +99,7 @@ def gui_build():
     gem5_exec_file_textbox = Text(top_frame, width=80, height=1, state=DISABLED)
     output_file_textbox = Text(top_frame, width=80, height=1, state=DISABLED)
     gem5_build_dir_textbox = Text(top_frame, width=80, height=1, state=DISABLED)
-    console_output_textbox = Text(bottom_frame,width=100,height=50, state=DISABLED)
+    console_output_textbox = Text(bottom_frame,width=90,height=20, state=DISABLED)
 
     config_file_textbox.grid(row=rows_count, column=1)
     rows_count += 1
