@@ -42,6 +42,11 @@ class ConsoleDisplay:
         #    Output chain: process.readline -> queue -> label)
         self.output = ""
 
+    def get_command_process_active(self):
+        if self.process.poll()==None:
+            return True
+        return False
+
     def subprocess_cmd(self,workingdir,command):
         self.output=""
         if isinstance(workingdir,str) and isinstance(command,str):
@@ -70,7 +75,7 @@ class ConsoleDisplay:
         """Update GUI with items from the queue."""
         for line in iter_except(q.get_nowait, Empty): # display all content
             if line is None:
-                self.tk_frame.after(40, self.update, q)  # schedule next update
+                self.tk_frame.after(500, self.update, q)  # schedule next update
                 return
             else:
                 #self.tk_txt_out['text'] = line # update GUI
@@ -78,6 +83,7 @@ class ConsoleDisplay:
                 self.insert_line_to_output(line,18)
                 self.show_filename_in_textbox(self.tk_txt_out,self.output)
                 break # display no more than one line per 40 milliseconds
+
         self.tk_frame.after(40, self.update, q) # schedule next update
 
     def quit(self):

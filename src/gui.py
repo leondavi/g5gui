@@ -10,7 +10,7 @@ except ImportError:
     from tkinter.ttk import *
     from tkinter import messagebox
 
-
+from threading import Thread
 from files_management import *
 from definitions import *
 
@@ -59,11 +59,19 @@ def gui_build():
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_build():
-        button_run['state'] = DISABLED
-        console_disp.subprocess_cmd(files_form_fill_dict[BUILD_DIR], "ls -l")
-        button_run['state'] = NORMAL
 
-        return 0
+        console_disp.subprocess_cmd(files_form_fill_dict[BUILD_DIR], "scons build/RISCV/gem5.opt -j4")
+        t = Thread(target=disable_buttons_thread)
+        t.daemon = True  # close pipe if GUI process exits
+        t.start()
+
+    def disable_buttons_thread():
+        button_run['state'] = DISABLED
+        button_build['state'] = DISABLED
+        while console_disp.get_command_process_active():
+            pass
+        button_build['state'] = NORMAL
+        button_run['state'] = NORMAL
 
 #############################
 #   R U N   M E T H O D     #
@@ -139,7 +147,6 @@ def gui_build():
     button_output_file = Button(top_frame, text='Output File', command=action_output_file)
     build_dir = Button(top_frame, text='Build Dir', command=action_build_dir)
 
-    button_exit = Button(middle_frame, text='Exit', command=window.destroy)
     button_run = Button(middle_frame, text='Run', command=action_run)
     button_build = Button(middle_frame, text='Build', command=action_build)
 
@@ -173,9 +180,8 @@ def gui_build():
 
     RUN_AND_EXIT_BUTTONS_ROWS = 0 #Definition
 
-    button_run.grid(row=RUN_AND_EXIT_BUTTONS_ROWS,column=4)
-    button_exit.grid(row=RUN_AND_EXIT_BUTTONS_ROWS,column=8)
-    button_build.grid(row=RUN_AND_EXIT_BUTTONS_ROWS,column=12)
+    button_run.grid(row=RUN_AND_EXIT_BUTTONS_ROWS,column=10)
+    button_build.grid(row=RUN_AND_EXIT_BUTTONS_ROWS,column=11)
 
     # loading dictionary if existed
     if check_file_exist(SETTINGS_FILE):
