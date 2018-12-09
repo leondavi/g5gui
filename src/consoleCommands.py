@@ -2,7 +2,8 @@
 import sys
 from subprocess import Popen,PIPE
 from threading import Thread
-from itertools import islice
+import os
+import signal
 import logging
 from tkinter import *
 
@@ -47,10 +48,13 @@ class ConsoleDisplay:
             return True
         return False
 
+    def kill_command_process(self):
+        os.killpg(os.getpgid(self.process.pid),signal.SIGTERM)
+
     def subprocess_cmd(self,workingdir,command):
         self.output=""
         if isinstance(workingdir,str) and isinstance(command,str):
-            self.process = Popen(command,cwd=workingdir, stdout=PIPE, shell=True)
+            self.process = Popen(command,cwd=workingdir, stdout=PIPE, shell=True,preexec_fn=os.setsid)
         else:
             logging.error("Error, working dir or command aren't string type")
         #proc_stdout = self.process.communicate()[0].strip()
@@ -84,7 +88,7 @@ class ConsoleDisplay:
                 self.show_filename_in_textbox(self.tk_txt_out,self.output)
                 break # display no more than one line per 40 milliseconds
 
-        self.tk_frame.after(40, self.update, q) # schedule next update
+        self.tk_frame.after(10, self.update, q) # schedule next update
 
     def quit(self):
         self.process.kill() # exit subprocess if GUI is closed (zombie!)
