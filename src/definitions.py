@@ -1,3 +1,5 @@
+NEGNULL = -1
+
 
 DebugModes = ["Activity","Branch","MinorCPU","Decode","MinorExec","Fetch","MinorInterrupt","MinorMem","MinorScoreboard","MinorTrace","MinorTiming","No_Debug","All_Traces"]
 
