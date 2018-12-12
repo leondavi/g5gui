@@ -38,25 +38,25 @@ def gui_build():
         window.destroy()
 
     def action_open_config_file():
-        filename = filedialog.askopenfilename(initialdir=files_form_fill_dict.get(CONFIG_FILE,os.getcwd()))
+        filename = filedialog.askopenfilename(initialdir=os.path.dirname(files_form_fill_dict.get(CONFIG_FILE,os.getcwd())))
         show_filename_in_textbox(config_file_textbox,filename)
         update_dict(files_form_fill_dict, CONFIG_FILE, filename)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_gem5_execute_file():
-        filename = filedialog.askopenfilename(initialdir=files_form_fill_dict.get(GEM5_EXECUTE_FILE,os.getcwd()))
+        filename = filedialog.askopenfilename(initialdir=os.path.dirname(files_form_fill_dict.get(GEM5_EXECUTE_FILE,os.getcwd())))
         show_filename_in_textbox(gem5_exec_file_textbox,filename)
         update_dict(files_form_fill_dict, GEM5_EXECUTE_FILE, filename)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_output_file():
-        filename = filedialog.asksaveasfilename(initialdir=files_form_fill_dict.get(OUTPUT_FILE,os.getcwd()))
+        filename = filedialog.asksaveasfilename(initialdir=os.path.dirname(files_form_fill_dict.get(OUTPUT_FILE,os.getcwd())))
         show_filename_in_textbox(output_file_textbox,filename)
         update_dict(files_form_fill_dict,OUTPUT_FILE,filename)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_build_dir():
-        dirname = filedialog.askdirectory(initialdir=files_form_fill_dict.get(BUILD_DIR,os.getcwd()))
+        dirname = filedialog.askdirectory(initialdir=os.path.dirname(files_form_fill_dict.get(BUILD_DIR,os.getcwd())))
         show_filename_in_textbox(gem5_build_dir_textbox, dirname)
         update_dict(files_form_fill_dict, BUILD_DIR, dirname)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
