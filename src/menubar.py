@@ -12,6 +12,7 @@ class Menubar:
 
 
     def __init__(self,window):
+        self.parms_window_inst = psw.ParamsSetWindow(window)
         self.menubar = Menu(window)
         self.dictionary = dict()
         self.selected_debug_mode = IntVar()
@@ -48,7 +49,7 @@ class Menubar:
 
     def generate_config_menu(self,window):
         filemenu = Menu(window,tearoff=0)
-        filemenu.add_command(label="params set", command=partial(psw.params_set_window,window))
+        filemenu.add_command(label="params set", command = self.parms_window_inst.generate_config_paramsSet_window)
         return filemenu
 
     def save_selection(self):
@@ -60,6 +61,6 @@ class Menubar:
 
     #Setters
     def set_config_file(self,config_file_name):
-        psw.config_params_set_window.set_config_file(config_file_name)
+        self.parms_window_inst.set_config_file(config_file_name)
 
 
