@@ -3,7 +3,8 @@ try:
     import Tkinter as tk
     from Queue import Queue, Empty
 except ImportError:
-    import tkinter as tk # Python 3
+    import tkinter as tk # Pyth
+    # on 3
     from queue import Queue, Empty # Python 3
     from tkinter import *
     from tkinter import filedialog
@@ -12,6 +13,7 @@ except ImportError:
 
 from threading import Thread
 from files_management import *
+from menubar import *
 from definitions import *
 
 from consoleCommands import ConsoleDisplay
@@ -33,7 +35,6 @@ def gui_build():
 
     files_form_fill_dict = dict()
     def on_closing():
-        save_obj(selected_debug_mode.get(),RADIO_SELECITON_FILE)
         window.destroy()
 
     def action_open_config_file():
@@ -41,11 +42,11 @@ def gui_build():
         show_filename_in_textbox(config_file_textbox,filename)
         update_dict(files_form_fill_dict, CONFIG_FILE, filename)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
+        menubar.set_config_file(files_form_fill_dict.get(CONFIG_FILE, ""))
 
     def action_gem5_execute_file():
         filename = filedialog.askopenfilename(initialdir=files_form_fill_dict.get(GEM5_EXECUTE_FILE,os.getcwd()))
         show_filename_in_textbox(gem5_exec_file_textbox,filename)
-        print(selected_debug_mode.get())
         update_dict(files_form_fill_dict, GEM5_EXECUTE_FILE, filename)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
@@ -62,7 +63,7 @@ def gui_build():
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_build():
-        save_obj(selected_debug_mode.get(), RADIO_SELECITON_FILE)
+
         console_disp.subprocess_cmd(files_form_fill_dict[BUILD_DIR], "scons build/RISCV/gem5.opt -j4")
         t = Thread(target=disable_buttons_thread)
         t.daemon = True  # close pipe if GUI process exits
@@ -77,10 +78,10 @@ def gui_build():
         button_run['state'] = NORMAL
 
     def action_run():
-        save_obj(selected_debug_mode.get(), RADIO_SELECITON_FILE)
+
         if correctness_check(files_form_fill_dict):
             save_obj(files_form_fill_dict,SETTINGS_FILE)
-            console_disp.subprocess_cmd(files_form_fill_dict[BUILD_DIR], generate_run_string(selected_debug_mode.get()))
+            console_disp.subprocess_cmd(files_form_fill_dict[BUILD_DIR], generate_run_string(menubar.get_debug_mode_selection()))
             t = Thread(target=disable_buttons_thread)
             t.daemon = True  # close pipe if GUI process exits
             t.start()
@@ -139,31 +140,6 @@ def gui_build():
 
     console_output_textbox.grid(row=1,column=0)
 
-    ###### Debug Mode Radio Buttons ######
-    SeperatorLabel = Label(top_frame, text=" ")
-    DebugModesLabel = Label(top_frame, text="Debug Modes:")
-    SeperatorLabel2 = Label(top_frame, text=" ")
-    ConsoleOutputLabel = Label(bottom_frame, text="Console output:")
-
-    ConsoleOutputLabel.grid(row=0,column=0)
-
-    selected_debug_mode = IntVar()
-    last_radio_but_select = 0
-    if check_file_exist(RADIO_SELECITON_FILE):
-        last_radio_but_select = load_obj(RADIO_SELECITON_FILE)
-        last_radio_but_select = 0 if last_radio_but_select==None else last_radio_but_select
-        selected_debug_mode.set(last_radio_but_select)
-
-
-
-    RADIO_BUTTON_WIDTH = 10 #Definition
-
-    radio_buttons_vec = []
-    for index in range (0,len(DebugModes)):
-        radio_buttons_vec.append(Radiobutton(top_frame, width=RADIO_BUTTON_WIDTH, text=DebugModes[index], value=index, variable=selected_debug_mode))
-
-
-
 
     ######### Buttons ##########
 
@@ -191,21 +167,10 @@ def gui_build():
     button_build_dir.grid(row=rows_starting_idx,column=0)
     rows_starting_idx += 1
 
-    ###### RadioButtons grid allocation #######
-    SeperatorLabel.grid(row=rows_starting_idx, column=0)  # Seperator
-    rows_starting_idx += 1
-    DebugModesLabel.grid(row=rows_starting_idx, column=0)  # Debug mode title
-    rows_starting_idx += 1
-    SeperatorLabel2.grid(row=rows_starting_idx, column=0)
-    rows_starting_idx += 1
+
 
     cols_idx = 0
-    # Radio buttons locations set:
-    for idx, radiobutt in enumerate(radio_buttons_vec):
-        radiobutt.grid(row=rows_starting_idx, column=cols_idx)
-        if (idx % 2 == 1):
-            rows_starting_idx += 1
-        cols_idx = (cols_idx + 1) % 2
+
 
     RUN_AND_EXIT_BUTTONS_ROWS = 0 #Definition
 
@@ -223,6 +188,9 @@ def gui_build():
 
     console_disp = ConsoleDisplay(bottom_frame,console_output_textbox)
 
+    #menubar adding
+    menubar = Menubar(window)
+    menubar.set_config_file(files_form_fill_dict.get(CONFIG_FILE,""))
 
     window.mainloop()
 

@@ -55,6 +55,6 @@ def load_obj(name ):
 
 def check_file_exist(name):
     try:
-        return os.path.isfile(SETTINGS_FILE+ '.pkl')
+        return os.path.isfile(name+ '.pkl')
     except FileNotFoundError:
         return None
