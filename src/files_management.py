@@ -15,26 +15,35 @@ SETTINGS_FILE = os.path.join(os.pardir, "files_dict")
 
 def correctness_check(files_dictionary):
     res = False if len(files_dictionary) < 3 else True
-    if CONFIG_FILE in files_dictionary.keys():
-        res &= check_file_ending(files_dictionary[CONFIG_FILE],"py")
-        res &= isinstance(files_dictionary[CONFIG_FILE],str)
+    res &= check_config_file_correctness(files_dictionary)
+    res &= check_gem_opt_file_correctness(files_dictionary)
+    if files_dictionary.get(OUTPUT_FILE,"") != "": #check if empty
+        res &= isinstance(files_dictionary[OUTPUT_FILE],str)
     else:
-        return False
+        res &= False
+    res = res if OUTPUT_FILE in files_dictionary.keys() else False
+    return res
+
+
+def check_config_file_correctness(files_dictionary):
+    res = True
+    if CONFIG_FILE in files_dictionary.keys():
+        res &= check_file_ending(files_dictionary[CONFIG_FILE], "py")
+        res &= isinstance(files_dictionary[CONFIG_FILE], str)
+    else:
+        res &= False
+    return res
+
+
+def check_gem_opt_file_correctness(files_dictionary):
+    res = True
     if GEM5_EXECUTE_FILE in files_dictionary.keys():
         res &= files_dictionary[GEM5_EXECUTE_FILE].endswith("gem5.opt")
         res &= isinstance(files_dictionary[GEM5_EXECUTE_FILE],str)
     else:
-        return False
-    if OUTPUT_FILE in files_dictionary.keys():
-        if files_dictionary.get(OUTPUT_FILE,"") == "":
-            return False
-        res &= isinstance(files_dictionary[OUTPUT_FILE],str)
-    else:
-        return False
-
-    res = res if OUTPUT_FILE in files_dictionary.keys() else False
-
+        res &= False
     return res
+
 
 # Inputs: filename and file type string without dot
 def check_file_ending(filename, filetype):

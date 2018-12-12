@@ -1,4 +1,5 @@
 import tkinter as tk # Pyth
+from files_management import *
 from tkinter import messagebox
 # on 3
 from queue import Queue, Empty # Python 3
@@ -11,26 +12,13 @@ PARAMS_WINDOW_SIZE = "300x600"
 
 
 class ParamsSetWindow:
-    def __init__(self,window):
-        self.config_file = ""
-        self.gem5_exec_file = ""
+    def __init__(self,window,filesfromfill_dict):
+        self.dictionary = filesfromfill_dict
         self.parent_window = window
 
-#Setters
-    def set_config_file(self,config_file_name):
-        self.config_file = config_file_name
-
-    def set_gem5_exec(self, file_path):
-        self.gem5_exec_file = file_path
-#Getters
-    def get_config_file_name(self):
-        return self.config_file
-
-    def get_gem5_exec_file_name(self):
-        return self.gem5_exec_file
-
     def generate_config_paramsSet_window(self):
-        if not self.config_file:  # check if string empty
+        check_files = check_config_file_correctness(self.dictionary) and check_gem_opt_file_correctness(self.dictionary)
+        if not check_files:  # check if string empty
             messagebox.showerror("Can't set params", "Config file wasn't loaded!")
         else:
             self.params_window = self.create_window("config file - parameters set", PARAMS_WINDOW_SIZE)

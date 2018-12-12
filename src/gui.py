@@ -42,7 +42,6 @@ def gui_build():
         show_filename_in_textbox(config_file_textbox,filename)
         update_dict(files_form_fill_dict, CONFIG_FILE, filename)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
-        menubar.set_config_file(files_form_fill_dict.get(CONFIG_FILE, ""))
 
     def action_gem5_execute_file():
         filename = filedialog.askopenfilename(initialdir=files_form_fill_dict.get(GEM5_EXECUTE_FILE,os.getcwd()))
@@ -189,8 +188,7 @@ def gui_build():
     console_disp = ConsoleDisplay(bottom_frame,console_output_textbox)
 
     #menubar adding
-    menubar = Menubar(window)
-    menubar.set_config_file(files_form_fill_dict.get(CONFIG_FILE,""))
+    menubar = Menubar(window,files_form_fill_dict)
 
     window.mainloop()
 
