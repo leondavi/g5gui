@@ -1,12 +1,7 @@
 import tkinter as tk # Pyth
 from files_management import *
 from tkinter import messagebox
-# on 3
-from queue import Queue, Empty # Python 3
-from tkinter import *
-from tkinter import filedialog
-from tkinter.ttk import *
-from tkinter import messagebox
+import subprocess
 
 PARAMS_WINDOW_SIZE = "300x600"
 
@@ -22,6 +17,10 @@ class ParamsSetWindow:
             messagebox.showerror("Can't set params", "Config file wasn't loaded!")
         else:
             self.params_window = self.create_window("config file - parameters set", PARAMS_WINDOW_SIZE)
+            subproc_res = subprocess.run([self.dictionary[GEM5_EXECUTE_FILE]+" "+self.dictionary[CONFIG_FILE]+" -h"], stdout=subprocess.PIPE,shell=True)
+            print(subproc_res.stdout)
+            subproc_res.stdout.decode()#recommended, check with utf-8 also
+
 
     # return instance of new window
 
