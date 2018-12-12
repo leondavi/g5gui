@@ -18,7 +18,7 @@ from definitions import *
 
 from consoleCommands import ConsoleDisplay
 
-GUI_VERSION = 0.1
+GUI_VERSION = 0.02
 BUTTON_ENDING_ROW = 4
 
 def update_dict(Dictionary,Key,Value):
@@ -30,6 +30,12 @@ def show_filename_in_textbox(txtbox,filename):
     txtbox.insert(END, filename)
     txtbox.config(state=DISABLED)
 
+def get_dirname_from_filepath(filename):
+    if not isinstance(filename,str):
+        return os.getcwd()
+    if filename == "":
+        return os.getcwd()
+    return os.path.dirname(filename)
 
 def gui_build():
 
@@ -38,25 +44,33 @@ def gui_build():
         window.destroy()
 
     def action_open_config_file():
-        filename = filedialog.askopenfilename(initialdir=os.path.dirname(files_form_fill_dict.get(CONFIG_FILE,os.getcwd())))
+        filename = filedialog.askopenfilename(initialdir=get_dirname_from_filepath(files_form_fill_dict.get(CONFIG_FILE,"")))
+        if not filename:
+            filename = files_form_fill_dict.get(CONFIG_FILE,"")
         show_filename_in_textbox(config_file_textbox,filename)
         update_dict(files_form_fill_dict, CONFIG_FILE, filename)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_gem5_execute_file():
-        filename = filedialog.askopenfilename(initialdir=os.path.dirname(files_form_fill_dict.get(GEM5_EXECUTE_FILE,os.getcwd())))
+        filename = filedialog.askopenfilename(initialdir=get_dirname_from_filepath(files_form_fill_dict.get(GEM5_EXECUTE_FILE,"")))
+        if not filename:
+            filename = files_form_fill_dict.get(GEM5_EXECUTE_FILE,"")
         show_filename_in_textbox(gem5_exec_file_textbox,filename)
         update_dict(files_form_fill_dict, GEM5_EXECUTE_FILE, filename)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_output_file():
-        filename = filedialog.asksaveasfilename(initialdir=os.path.dirname(files_form_fill_dict.get(OUTPUT_FILE,os.getcwd())))
+        filename = filedialog.asksaveasfilename(initialdir=get_dirname_from_filepath(files_form_fill_dict.get(OUTPUT_FILE,"")))
+        if not filename:
+            filename = files_form_fill_dict.get(OUTPUT_FILE,"")
         show_filename_in_textbox(output_file_textbox,filename)
         update_dict(files_form_fill_dict,OUTPUT_FILE,filename)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_build_dir():
-        dirname = filedialog.askdirectory(initialdir=os.path.dirname(files_form_fill_dict.get(BUILD_DIR,os.getcwd())))
+        dirname = filedialog.askdirectory(initialdir=get_dirname_from_filepath(files_form_fill_dict.get(BUILD_DIR,"")))
+        if not dirname:
+            dirname = files_form_fill_dict.get(BUILD_DIR,"")
         show_filename_in_textbox(gem5_build_dir_textbox, dirname)
         update_dict(files_form_fill_dict, BUILD_DIR, dirname)
         save_obj(files_form_fill_dict, SETTINGS_FILE)
@@ -108,7 +122,7 @@ def gui_build():
 
     window.title("gem5 GUI app ver-"+str(GUI_VERSION))
 
-    window.geometry('720x600')
+    window.geometry('730x650')
     window.resizable(FALSE, FALSE)
 
     top_frame = Frame(window,height=200)
@@ -127,7 +141,7 @@ def gui_build():
     gem5_exec_file_textbox = Text(top_frame, width=80, height=1, state=DISABLED)
     output_file_textbox = Text(top_frame, width=80, height=1, state=DISABLED)
     gem5_build_dir_textbox = Text(top_frame, width=80, height=1, state=DISABLED)
-    console_output_textbox = Text(bottom_frame,width=100,height=20, state=DISABLED)
+    console_output_textbox = Text(bottom_frame,width=90,height=20, state=DISABLED)
 
     config_file_textbox.grid(row=rows_count, column=1)
     rows_count += 1
