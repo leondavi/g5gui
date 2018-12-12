@@ -5,7 +5,7 @@ import subprocess
 from scrframe import *
 from definitions import *
 
-PARAMS_WINDOW_SIZE = "400x600"
+PARAMS_WINDOW_SIZE = "500x600"
 
 
 class ParamsSetWindow:
@@ -25,12 +25,15 @@ class ParamsSetWindow:
             messagebox.showerror("Can't set params", "Config file wasn't loaded!")
         else:
             self.params_window = self.create_window("Config File Parameters Set", PARAMS_WINDOW_SIZE)
-            subproc_res = subprocess.run([self.dictionary[GEM5_EXECUTE_FILE]+" "+self.dictionary[CONFIG_FILE]+" -h"], stdout=subprocess.PIPE,shell=True)
+            self.params_window.resizable(FALSE, FALSE)
+
+            subproc_res = subprocess.run([self.dictionary[GEM5_EXECUTE_FILE]+" "+self.dictionary[CONFIG_FILE]+" -h"],
+                                         stdout=subprocess.PIPE,shell=True)
 
             self.params_dict = self.extract_params_list(subproc_res.stdout.decode())
 
-            self.scrolled_frame = VerticalScrolledFrame(self.params_window,height=50)
-            self.scrolled_frame.pack()
+            self.scrolled_frame = VerticalScrolledFrame(self.params_window)
+            self.scrolled_frame.pack(expand=1)
 
             self.params_labels_dict = dict()
             self.params_entries_dict = dict()
@@ -45,9 +48,10 @@ class ParamsSetWindow:
                 self.params_entries_dict[key].grid(row=row,column=col+1)
                 row+=1
 
-            update_button = Button(self.params_window, text='Update Params', command=self.update_button)
-            update_button.pack()
+            update_button = Button(self.params_window, text='Update Params', command=self.update_button,width=20)
+            update_button.pack(side=BOTTOM)
             self.params_window.mainloop()
+
     # return instance of new window
 
     def config_changed_case(self):
@@ -64,7 +68,6 @@ class ParamsSetWindow:
         t.wm_title(new_window_name)
         # t.wm_geometry(sizes)
         t.geometry(sizes)
-        t.config(height=600,width=600)
         #  l = tk.Label(t, text="This is window #%s" % self.counter)
         #  l.pack(side="top", fill="both", expand=True, padx=100, pady=100)
         return t

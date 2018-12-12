@@ -122,7 +122,7 @@ def gui_build():
 
     window.title("gem5 GUI app ver-"+str(GUI_VERSION))
 
-    window.geometry('730x650')
+    window.geometry('730x620')
     window.resizable(FALSE, FALSE)
 
     top_frame = Frame(window,height=200)
