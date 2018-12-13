@@ -7,4 +7,4 @@ Requirements:
 Tested on Python version > 3.5 
 tkinter package: ```apt-get install python3-tk```
 
-Running gui command under src directory: ```$: python3 main.py``` 
+Running gui open command inside /src directory: ```$: python3 main.py``` 
