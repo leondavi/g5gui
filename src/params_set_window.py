@@ -5,7 +5,9 @@ import subprocess
 from scrframe import *
 from definitions import *
 
+
 PARAMS_WINDOW_SIZE = "500x600"
+DEFAULT_VALUE = "Default Value"
 
 
 class ParamsSetWindow:
@@ -13,6 +15,7 @@ class ParamsSetWindow:
         self.dictionary = filesfromfill_dict
         self.parent_window = window
         self.last_config_name = None
+        self.edited_params = dict()
 
     def generate_config_paramsSet_window(self):
         check_files = check_config_file_correctness(self.dictionary) and check_gem_opt_file_correctness(self.dictionary)
@@ -60,8 +63,16 @@ class ParamsSetWindow:
         self.params_dict.clear()
 
     def update_button(self):
+        self.edited_params.clear()
         for key, entry in self.params_entries_dict.items():
-            print(entry.get())#TODO remove
+            if entry.get() != DEFAULT_VALUE:
+                self.edited_params[key] = entry.get()
+
+    def generate_params_command_string(self):
+        final_str = ""
+        for key, entry in self.edited_params.items():
+            final_str=final_str+str(key)+"="+str(entry)+" "
+        return final_str
 
     def create_window(self, new_window_name, sizes):
         t = tk.Toplevel(self.parent_window)
@@ -81,7 +92,7 @@ class ParamsSetWindow:
                 for word in words:
                     if word.find("--") != NEGNULL:
                         param_val_list = word.split("=")[0]
-                        params_dict[param_val_list] = "Default Value"
+                        params_dict[param_val_list] = DEFAULT_VALUE
 
         return params_dict
 

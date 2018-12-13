@@ -115,7 +115,9 @@ def gui_build():
         if DebugModes[radio_but_res] == "All_Traces": #TODO
             pass
         config_command = files_form_fill_dict[CONFIG_FILE].replace(files_form_fill_dict[BUILD_DIR],"")[1:]
-        return gem5_command+" "+debug_command+" "+config_command+" | tee "+output_file_command
+        config_debug_commands = menubar.get_updated_list_of_params()
+        print(gem5_command+" "+debug_command+" "+config_command+" "+config_debug_commands+" | tee "+output_file_command)
+        return gem5_command+" "+debug_command+" "+config_command+" "+config_debug_commands+" | tee "+output_file_command
 
     window = Tk()
     window.protocol("WM_DELETE_WINDOW", on_closing)

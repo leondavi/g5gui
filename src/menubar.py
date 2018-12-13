@@ -37,7 +37,7 @@ class Menubar:
         filemenu.add_command(label="Properties", command=self.func_nothing)
         filemenu.add_command(label="Save", command=self.func_nothing)
         filemenu.add_separator()
-        filemenu.add_command(label="Exit", command=window.quit)
+        filemenu.add_command(label="Exit", command=window.destroy)
         return filemenu
 
     def generate_debug_modes_menu(self,window):
@@ -46,6 +46,9 @@ class Menubar:
         for index in range(0, len(DebugModes)):
             debugMenu.add_radiobutton(label=DebugModes[index], value=index,variable=self.selected_debug_mode, command=self.save_selection)
         return debugMenu
+
+    def get_updated_list_of_params(self):
+        return self.parms_window_inst.generate_params_command_string()
 
     def generate_config_menu(self,window):
         filemenu = Menu(window,tearoff=0)
