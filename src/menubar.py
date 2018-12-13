@@ -53,6 +53,7 @@ class Menubar:
     def generate_config_menu(self,window):
         filemenu = Menu(window,tearoff=0)
         filemenu.add_command(label="params set", command = self.parms_window_inst.generate_config_paramsSet_window)
+        filemenu.add_command(label="params load from files")#TODO
         return filemenu
 
     def save_selection(self):
