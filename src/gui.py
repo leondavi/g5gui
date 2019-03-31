@@ -41,6 +41,7 @@ def gui_build():
 
     files_form_fill_dict = dict()
     def on_closing():
+        os.system("killall gem5.opt")
         window.destroy()
 
     def action_open_config_file():
@@ -76,7 +77,6 @@ def gui_build():
         save_obj(files_form_fill_dict, SETTINGS_FILE)
 
     def action_build():
-
         console_disp.subprocess_cmd(files_form_fill_dict[BUILD_DIR], "scons build/RISCV/gem5.opt -j4")
         t = Thread(target=disable_buttons_thread)
         t.daemon = True  # close pipe if GUI process exits
@@ -91,8 +91,8 @@ def gui_build():
         button_run['state'] = NORMAL
 
     def action_run():
-
         if correctness_check(files_form_fill_dict):
+            os.system("killall gem5.opt")
             save_obj(files_form_fill_dict,SETTINGS_FILE)
             console_disp.subprocess_cmd(files_form_fill_dict[BUILD_DIR], generate_run_string(menubar.get_debug_mode_selection()))
             t = Thread(target=disable_buttons_thread)
@@ -103,6 +103,7 @@ def gui_build():
         #generate_run_string(selected_debug_mode.get())
 
     def action_stop():
+        os.system("killall gem5.opt")
         console_disp.kill_command_process()
 
     def generate_run_string(radio_but_res):
