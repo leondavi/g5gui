@@ -12,9 +12,9 @@ except ImportError:
     from tkinter import messagebox
 
 from threading import Thread
-from files_management import *
 from menubar import *
 from definitions import *
+from script_run_menu import *
 
 from consoleCommands import ConsoleDisplay
 
@@ -102,6 +102,11 @@ def gui_build():
             messagebox.showinfo("Running Error","One or more files are missing or invalid!")
         #generate_run_string(selected_debug_mode.get())
 
+    def action_script_run(window):
+        scriptRunInst = ScritptRunWin(window)
+        scriptRunInst.generate_sub_window()
+        pass
+
     def action_stop():
         os.system("killall gem5.opt")
         console_disp.kill_command_process()
@@ -167,6 +172,7 @@ def gui_build():
     button_output_file = Button(top_frame, text='Output File', command=action_output_file)
     button_build_dir = Button(top_frame, text='gem5 Dir', command=action_build_dir)
 
+    button_multi_run = Button(middle_frame, text='Script Run', command=lambda: action_script_run(window))
     button_run = Button(middle_frame, text='Run', command=action_run)
     button_build = Button(middle_frame, text='Build', command=action_build)
     button_stop = Button(middle_frame, text='Stop', command=action_stop)
@@ -190,6 +196,7 @@ def gui_build():
 
     RUN_AND_EXIT_BUTTONS_ROWS = 0 #Definition
 
+    button_multi_run.grid(row=RUN_AND_EXIT_BUTTONS_ROWS,column=8)
     button_run.grid(row=RUN_AND_EXIT_BUTTONS_ROWS,column=10)
     button_build.grid(row=RUN_AND_EXIT_BUTTONS_ROWS,column=11)
     button_stop.grid(row=RUN_AND_EXIT_BUTTONS_ROWS,column=12)
