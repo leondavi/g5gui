@@ -103,7 +103,7 @@ def gui_build():
         #generate_run_string(selected_debug_mode.get())
 
     def action_script_run(window):
-        scriptRunInst = ScritptRunWin(window)
+        scriptRunInst = ScritptRunWin(window,files_form_fill_dict[CONFIG_FILE])
         scriptRunInst.generate_sub_window()
         pass
 
