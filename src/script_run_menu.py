@@ -6,20 +6,21 @@ import subprocess
 from scrframe import *
 from definitions import *
 from demopanels import MsgPanel, SeeDismissPanel
-from parallel_gem_parser import *
+from parallel_gem_exec import *
 
-SCRIPT_RUN_MENU_WINSIZE = "800x500"
+SCRIPT_RUN_MENU_WINSIZE = "800x750"
 USER_PROPERTIES_FILE = "script_prop"
 
 PATH_TO_SCRIPT = 1
 
 
 class ScritptRunWin:
-    def __init__(self,window,config_file_str):
+    def __init__(self,window,config_file_str,gem5_dir):
         self.parent_window = window
         self.curr_row = 1
         self.dict_properties = dict()
         self.config_file_str = config_file_str
+        self.gem5_build_dir_str = gem5_dir
 
         #Load params
         if check_file_exist(USER_PROPERTIES_FILE):
@@ -49,7 +50,7 @@ class ScritptRunWin:
         cur_row = self.add_buttons(self.frameMiddle)
         #TODO load number of parallel processes
         #bottom frame widgets
-        self.add_progress_bar( self.frameBottom,cur_row,0,0)
+
 
     def add_file_browser_and_textbar(self,frame,row):
         MsgPanel(self.window,["Choose script file to run multiple gem5 tests"],0,0)
@@ -59,7 +60,7 @@ class ScritptRunWin:
         self.txtBox['state'] = DISABLED
         self.BrowseButton = Button(frame, text='Browse', command = lambda: self.browse(self.window,self.txtBox))
 
-        self.txtBox.grid(row=row,column=0)
+        self.txtBox.grid(row=row,column=0,padx=5)
         self.BrowseButton.grid(row=row,column=1)
         row+=1
         return row
@@ -70,6 +71,7 @@ class ScritptRunWin:
         cur_row += 1
         slider = IntVar()
         slider.set(1)
+        self.processes_available = 1
         self.processes_label = Label(frame, textvariable=slider).grid(row=cur_row, column=1)
         cur_row += 1
         self.processes_scale = Scale(frame, from_=1, to_=8, length=300,variable = slider,command = lambda x: self.discrete_scale(slider)).grid(row=cur_row,column=1)
@@ -81,14 +83,16 @@ class ScritptRunWin:
 
     def discrete_scale(self,slider):
         value = slider.get()
-        newvalue = min(range(1,8), key=lambda x: abs(x - float(value)))
-        slider.set(value)
+        newvalue = min(range(1,9), key=lambda x: abs(x - float(value)))
+        slider.set(newvalue)
+        self.processes_available = newvalue
 
 
     def add_progress_bar(self,frame,row,column,process_id):
-        name_frame = MsgPanel(frame,["P-"+str(process_id)],0)
+        name_frame = MsgPanel(frame,["P-"+str(process_id)],row)
+        row+=1
         pb = Progressbar(frame,mode='determinate',length=300)
-        pb.grid(row=1,column=column,pady=5)
+        pb.grid(row=row,column=column,pady=5)
         return (process_id,pb)
 
 
@@ -114,5 +118,15 @@ class ScritptRunWin:
 
     def action_run(self):
         pgp_p = pgp_parser(self.dict_properties[PATH_TO_SCRIPT])
-        pgp_p.parse()
+        res = pgp_p.parse()
+        if res == ERROR_DEF :
+            messagebox.showerror("Error","Only pgp files are supported")
+        jobs_count = len(pgp_p.get_parallel_jobs())
+        self.progress_bars = []
+        for i in range(0,2*self.processes_available,2):
+            self.progress_bars.append(self.add_progress_bar(self.frameBottom, i, 0, int(i/2)))
+
+        pge = parallel_gem_exec(pgp_p.get_parallel_jobs(),self.gem5_build_dir_str,self.processes_available)
+        pge.allocate_jobs_to_processes()
+        pge.clear_finished_processes()
         pass
