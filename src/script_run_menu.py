@@ -78,7 +78,12 @@ class ScritptRunWin:
         cur_row += 1
         self.RunButton = Button(frame, text='Run', command = self.action_run)
         self.RunButton.grid(row=cur_row,column=1,pady=5)
-        cur_row += 2
+        cur_row += 1
+        self.remained_job_text = StringVar()
+        self.remained_job_text.set("Remained jobs: -")
+        self.remained_jobs_label = Label(frame,textvariable=self.remained_job_text)
+        self.remained_jobs_label.grid(row=cur_row, column=1, pady=2)
+        cur_row += 1
         return cur_row
 
     def discrete_scale(self,slider):
@@ -127,6 +132,7 @@ class ScritptRunWin:
             self.progress_bars.append(self.add_progress_bar(self.frameBottom, i, 0, int(i/2)))
 
         pge = parallel_gem_exec(pgp_p.get_parallel_jobs(),self.gem5_build_dir_str,self.processes_available)
+        self.remained_job_text.set("Remained jobs:"+str(pge.get_jobs_remained()))
         pge.allocate_jobs_to_processes()
         pge.clear_finished_processes()
         pass
