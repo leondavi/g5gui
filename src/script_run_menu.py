@@ -7,6 +7,8 @@ from scrframe import *
 from definitions import *
 from demopanels import MsgPanel, SeeDismissPanel
 from parallel_gem_exec import *
+import time
+import threading
 
 SCRIPT_RUN_MENU_WINSIZE = "800x750"
 USER_PROPERTIES_FILE = "script_prop"
@@ -34,17 +36,21 @@ class ScritptRunWin:
         self.window = self.create_window("Gem5 script runner *.gem", SCRIPT_RUN_MENU_WINSIZE)
         self.window.resizable(FALSE, FALSE)
         self.frameTop = Frame( self.window,height=200)
+        self.frameScale = Frame( self.window,height=100)
         self.frameMiddle = Frame( self.window,height=200)
         self.frameBottom = Frame( self.window,height=200)
 
         self.frameTop.grid(row=1)
-        self.frameMiddle.grid(row=2)
-        self.frameBottom.grid(row=3)
+        self.frameScale.grid(row=2)
+        self.frameMiddle.grid(row=3)
+        self.frameBottom.grid(row=4)
 
         #top frame widgets
         cur_row = 0
         cur_row = self.add_file_browser_and_textbar(self.frameTop,cur_row)
         MsgPanel(self.frameTop, ["Default config file: "+self.config_file_str], row=cur_row, column=0)
+        #add scale of processes frame
+        self.add_process_amount_bar(self.frameScale)
         #middle fram widgets
         cur_row = 0
         cur_row = self.add_buttons(self.frameMiddle)
@@ -65,7 +71,7 @@ class ScritptRunWin:
         row+=1
         return row
 
-    def add_buttons(self,frame):
+    def add_process_amount_bar(self,frame):
         cur_row = 0
         MsgPanel(frame, ["Select # of processes:"],row=cur_row,column=1)
         cur_row += 1
@@ -75,9 +81,14 @@ class ScritptRunWin:
         self.processes_label = Label(frame, textvariable=slider).grid(row=cur_row, column=1)
         cur_row += 1
         self.processes_scale = Scale(frame, from_=1, to_=8, length=300,variable = slider,command = lambda x: self.discrete_scale(slider)).grid(row=cur_row,column=1)
-        cur_row += 1
+
+    def add_buttons(self,frame):
+
+        cur_row = 0
         self.RunButton = Button(frame, text='Run', command = self.action_run)
         self.RunButton.grid(row=cur_row,column=1,pady=5)
+        self.StopButton = Button(frame, text='Stop', command = self.action_stop)
+        self.StopButton.grid(row=cur_row,column=2,pady=5)
         cur_row += 1
         self.remained_job_text = StringVar()
         self.remained_job_text.set("Remained jobs: -")
@@ -96,9 +107,11 @@ class ScritptRunWin:
     def add_progress_bar(self,frame,row,column,process_id):
         name_frame = MsgPanel(frame,["P-"+str(process_id)],row)
         row+=1
-        pb = Progressbar(frame,mode='determinate',length=300)
+        progress_var = DoubleVar()
+        progress_var.set(0)
+        pb = Progressbar(frame,mode='determinate',length=300,variable=progress_var,maximum=100)
         pb.grid(row=row,column=column,pady=5)
-        return (process_id,pb)
+        return (process_id,pb,progress_var)
 
 
     def create_window(self, new_window_name, sizes):
@@ -120,8 +133,13 @@ class ScritptRunWin:
         textBox.insert(END, self.dict_properties[PATH_TO_SCRIPT])
         textBox['state'] = DISABLED
 
+    def action_stop(self):
+        self.stop = True
+        self.pge.kill_all_processes()
+
 
     def action_run(self):
+        self.stop = False
         pgp_p = pgp_parser(self.dict_properties[PATH_TO_SCRIPT])
         res = pgp_p.parse()
         if res == ERROR_DEF :
@@ -130,9 +148,23 @@ class ScritptRunWin:
         self.progress_bars = []
         for i in range(0,2*self.processes_available,2):
             self.progress_bars.append(self.add_progress_bar(self.frameBottom, i, 0, int(i/2)))
+        self.pge = parallel_gem_exec(pgp_p.get_parallel_jobs(),self.gem5_build_dir_str,self.processes_available)
+        self.remained_job_text.set("Remained jobs:" + str(self.pge.get_jobs_remained()))
+        self.thread = threading.Thread(target=self.jobs_processing, args=[self.pge])
+        self.thread.start()
 
-        pge = parallel_gem_exec(pgp_p.get_parallel_jobs(),self.gem5_build_dir_str,self.processes_available)
-        self.remained_job_text.set("Remained jobs:"+str(pge.get_jobs_remained()))
-        pge.allocate_jobs_to_processes()
-        pge.clear_finished_processes()
-        pass
+    def jobs_processing(self,pge):
+        while pge.get_jobs_remained() > 0 and not self.stop:
+            pge.allocate_jobs_to_processes()
+            pge.clear_finished_processes()
+            self.remained_job_text.set("Remained jobs:" + str(pge.get_jobs_remained()))
+            print("in while")
+            #updating cpu processes usage bars
+            bars_cpu_usage_list = pge.get_processes_cpu_usage()
+            for bar in bars_cpu_usage_list:
+                self.progress_bars[bar[0]][2].set(bar[1])
+            time.sleep(0.1)
+            #print("in while")
+        print("stopped")
+        for bar in self.progress_bars:
+            bar[2].set(0)

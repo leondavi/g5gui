@@ -1,5 +1,8 @@
 from parallel_gem_parser import *
 from multiprocessing import Process
+import psutil
+import os
+import signal
 
 class parallel_gem_exec():
     def __init__(self,parallel_jobs,gem5_dir,numof_processes_avaialable = 1):
@@ -21,13 +24,21 @@ class parallel_gem_exec():
             self.processes_num_list.append(self.assign_proc_num())
             newProc.start()
 
+    def kill_all_processes(self):
+        for proc in self.processes_list:
+            if proc.is_alive:
+                os.kill(proc.pid,signal.SIGKILL)
+
     def task(self):
+        for i in range(0,100000000):
+            i*5
         pass
 
     def assign_proc_num(self):
         proc_num = 0
         while(proc_num in self.processes_num_list):
             proc_num += 1
+        return proc_num
 
     def clear_finished_processes(self):
         survived_clear = []
@@ -46,6 +57,21 @@ class parallel_gem_exec():
     # Getters
     def get_jobs_remained(self):
         return self.jobs_remain
+
+    def get_processes_cpu_usage(self):
+        processes_cpu_usage_list = []
+        for idx,proc in enumerate(self.processes_list):
+            cpu_usage = 0
+            if(psutil.pid_exists(proc.pid)):
+                p = psutil.Process(proc.pid)
+                cpu_usage = p.cpu_percent()
+                if cpu_usage == None:
+                    cpu_usage = 0
+                else:
+                    cpu_usage = 100
+            processes_cpu_usage_list.append((self.processes_num_list[idx],cpu_usage))
+        return processes_cpu_usage_list
+
 
     # Checks
 
