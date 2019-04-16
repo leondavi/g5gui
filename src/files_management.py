@@ -6,6 +6,8 @@ GEM5_EXECUTE_FILE = 2
 OUTPUT_FILE = 3
 BUILD_DIR = 4
 
+NUM_OF_KEYS = 4
+
 SETTINGS_FILE = os.path.join(os.pardir, "files_dict")
 
 #files_form_fill_dict["action_config"] = filename

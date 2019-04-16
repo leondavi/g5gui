@@ -3,22 +3,24 @@ from multiprocessing import Process
 import psutil
 import os
 import signal
+from files_management import *
 
 class parallel_gem_exec():
-    def __init__(self,parallel_jobs,gem5_dir,numof_processes_avaialable = 1):
+    def __init__(self,parallel_jobs,form_dict,numof_processes_avaialable = 1):
         self.parallel_jobs = parallel_jobs
-        self.gem5_dir = gem5_dir
         self.numof_processes_avaialable = numof_processes_avaialable
         self.processes_list = []
         self.processes_num_list = []
         self.processes_available_list = self.processes_list
         self.jobs_remain = len(parallel_jobs)
         self.job_iterator = 0
+        self.gem5_dir_str = form_dict[BUILD_DIR]
+        self.gem5_exec_file_str = form_dict[GEM5_EXECUTE_FILE]
 
     def allocate_jobs_to_processes(self):
         self.clear_finished_processes()
         while self.available_processes_Q() and self.jobs_remain > 0 :
-            newProc = Process(target=self.task)
+            newProc = Process(target=self.task,args=[self.parallel_jobs[self.job_iterator]])
             self.job_iterator += 1
             self.processes_list.append(newProc)
             self.processes_num_list.append(self.assign_proc_num())
@@ -29,10 +31,24 @@ class parallel_gem_exec():
             if proc.is_alive:
                 os.kill(proc.pid,signal.SIGKILL)
 
-    def task(self):
+    def task(self,job):
+        command_string = self.build_command_string(job)
+        print(job)
         for i in range(0,100000000):
             i*5
         pass
+
+    def build_command_string(self,job):
+        command_string = ""
+        #adding gem5 exec file
+        command_string += "."+self.gem5_exec_file_str
+        #adding output dir as job name:
+        command_string += " --outdir="+job.experiment_name+" "
+        for field in job.attributes:
+            command_string+=field
+            command_string+=" "
+        return command_string
+
 
     def assign_proc_num(self):
         proc_num = 0

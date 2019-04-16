@@ -9,6 +9,7 @@ from demopanels import MsgPanel, SeeDismissPanel
 from parallel_gem_exec import *
 import time
 import threading
+from support import *
 
 SCRIPT_RUN_MENU_WINSIZE = "800x750"
 USER_PROPERTIES_FILE = "script_prop"
@@ -17,12 +18,11 @@ PATH_TO_SCRIPT = 1
 
 
 class ScritptRunWin:
-    def __init__(self,window,config_file_str,gem5_dir):
+    def __init__(self,window,previous_win_form):
         self.parent_window = window
         self.curr_row = 1
         self.dict_properties = dict()
-        self.config_file_str = config_file_str
-        self.gem5_build_dir_str = gem5_dir
+        self.form_dict = previous_win_form
 
         #Load params
         if check_file_exist(USER_PROPERTIES_FILE):
@@ -33,30 +33,46 @@ class ScritptRunWin:
 
 
     def generate_sub_window(self):
-        self.window = self.create_window("Gem5 script runner *.gem", SCRIPT_RUN_MENU_WINSIZE)
-        self.window.resizable(FALSE, FALSE)
-        self.frameTop = Frame( self.window,height=200)
-        self.frameScale = Frame( self.window,height=100)
-        self.frameMiddle = Frame( self.window,height=200)
-        self.frameBottom = Frame( self.window,height=200)
 
-        self.frameTop.grid(row=1)
-        self.frameScale.grid(row=2)
-        self.frameMiddle.grid(row=3)
-        self.frameBottom.grid(row=4)
+        if self.form_dict_is_valid_Q():
+            self.window = self.create_window("Gem5 script runner *.gem", SCRIPT_RUN_MENU_WINSIZE)
+            self.window.resizable(FALSE, FALSE)
+            self.frameTop = Frame( self.window,height=200)
+            self.frameScale = Frame( self.window,height=100)
+            self.frameMiddle = Frame( self.window,height=200)
+            self.frameBottom = Frame( self.window,height=200)
 
-        #top frame widgets
-        cur_row = 0
-        cur_row = self.add_file_browser_and_textbar(self.frameTop,cur_row)
-        MsgPanel(self.frameTop, ["Default config file: "+self.config_file_str], row=cur_row, column=0)
-        #add scale of processes frame
-        self.add_process_amount_bar(self.frameScale)
-        #middle fram widgets
-        cur_row = 0
-        cur_row = self.add_buttons(self.frameMiddle)
-        #TODO load number of parallel processes
-        #bottom frame widgets
+            self.frameTop.grid(row=1)
+            self.frameScale.grid(row=2)
+            self.frameMiddle.grid(row=3)
+            self.frameBottom.grid(row=4)
 
+            #top frame widgets
+            cur_row = 0
+            cur_row = self.add_file_browser_and_textbar(self.frameTop,cur_row)
+            MsgPanel(self.frameTop, ["Default config file: "+self.config_file_str], row=cur_row, column=0)
+            #add scale of processes frame
+            self.add_process_amount_bar(self.frameScale)
+            #middle fram widgets
+            cur_row = 0
+            cur_row = self.add_buttons(self.frameMiddle)
+            #TODO load number of parallel processes
+            #bottom frame widgets
+        else:
+            messagebox.showerror("Error", "One of the file is incomplete")
+
+    def form_dict_is_valid_Q(self):
+        all_keys_exists = True
+        for i in range(1,NUM_OF_KEYS):
+            all_keys_exists = all_keys_exists and dict_check_key(self.form_dict,i)
+
+        if all_keys_exists:
+            self.config_file_str = self.form_dict[CONFIG_FILE]
+            self.gem5_build_dir_str = self.form_dict[BUILD_DIR]
+            self.gem5_exec_str = self.form_dict[GEM5_EXECUTE_FILE]
+            return True
+
+        return False
 
     def add_file_browser_and_textbar(self,frame,row):
         MsgPanel(self.window,["Choose script file to run multiple gem5 tests"],0,0)
@@ -148,7 +164,7 @@ class ScritptRunWin:
         self.progress_bars = []
         for i in range(0,2*self.processes_available,2):
             self.progress_bars.append(self.add_progress_bar(self.frameBottom, i, 0, int(i/2)))
-        self.pge = parallel_gem_exec(pgp_p.get_parallel_jobs(),self.gem5_build_dir_str,self.processes_available)
+        self.pge = parallel_gem_exec(pgp_p.get_parallel_jobs(),self.form_dict,self.processes_available)
         self.remained_job_text.set("Remained jobs:" + str(self.pge.get_jobs_remained()))
         self.thread = threading.Thread(target=self.jobs_processing, args=[self.pge])
         self.thread.start()
