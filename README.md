@@ -12,3 +12,7 @@ Running gui open command inside /src directory: ```$: python3 main.py```
 script.pgp is an example of how to write multiple experiments script file. 
 In main menu of g5gui select Script Run button, choose file script and how many 
 process to run, then click on run. 
+
+Easier launch add the following lines to the end of ~/.bashrc: 
+```G5GUI_FOLDER=$(echo "$HOME/workspace/g5gui" | tr -d '\r')```
+```alias g5gui='cd $G5GUI_FOLDER/src ; python3 main.py'```
