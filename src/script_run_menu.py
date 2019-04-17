@@ -113,9 +113,9 @@ class ScritptRunWin:
         cur_row += 1
         return cur_row
 
-    def discrete_scale(self,slider):
+    def discrete_scale(self, slider):
         value = slider.get()
-        newvalue = min(range(1,9), key=lambda x: abs(x - float(value)))
+        newvalue = min(range(1, 9), key=lambda x: abs(x - float(value)))
         slider.set(newvalue)
         self.processes_available = newvalue
 
