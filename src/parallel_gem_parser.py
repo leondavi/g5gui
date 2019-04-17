@@ -5,6 +5,8 @@ ERROR_DEF = -1
 SUCCESS_DEF = 0
 EXP_NAME_ATTR = "Experiment Name"
 CONFIG_FILE_ATTR = "Config File"
+DEBUG_FLAG = "--debug-flag"
+
 
 class pgp_parser:
 
@@ -27,6 +29,8 @@ class pgp_parser:
                     new_job.set_experiment_name(value)
                 elif key == CONFIG_FILE_ATTR:
                     new_job.set_config_file(value)
+                elif key == DEBUG_FLAG:
+                    new_job.set_debug_flag(value)
                 else:
                     attributes_list.append(key)
                     attributes_list.append(value)
@@ -56,3 +60,6 @@ class p_job:
 
     def set_config_file(self,config_file):
         self.config_file = config_file
+
+    def set_debug_flag(self,value):
+        self.debug_flag = value

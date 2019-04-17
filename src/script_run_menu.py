@@ -174,7 +174,6 @@ class ScritptRunWin:
             pge.allocate_jobs_to_processes()
             pge.clear_finished_processes()
             self.remained_job_text.set("Remained jobs:" + str(pge.get_jobs_remained()))
-            print("in while")
             #updating cpu processes usage bars
             bars_cpu_usage_list = pge.get_processes_cpu_usage()
             for bar in bars_cpu_usage_list:

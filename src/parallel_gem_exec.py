@@ -1,7 +1,9 @@
 from parallel_gem_parser import *
 from multiprocessing import Process
+from subprocess import Popen,PIPE
 import psutil
 import os
+import time
 import signal
 from files_management import *
 
@@ -30,23 +32,35 @@ class parallel_gem_exec():
         for proc in self.processes_list:
             if proc.is_alive:
                 os.kill(proc.pid,signal.SIGKILL)
+        os.system("killall gem5.opt")
 
     def task(self,job):
         command_string = self.build_command_string(job)
-        print(job)
-        for i in range(0,100000000):
-            i*5
-        pass
+        process = Popen(command_string, cwd=self.gem5_dir_str, stdout=PIPE, shell=True, preexec_fn=os.setsid)
+        print("Job name: "+job.experiment_name)
+        print("Command executed: "+command_string)
+        alive = process.poll() == None
+        while alive:
+            time.sleep(0.5)
+            alive = process.poll() == None
+
 
     def build_command_string(self,job):
         command_string = ""
         #adding gem5 exec file
-        command_string += "."+self.gem5_exec_file_str
+        command_string += self.gem5_exec_file_str
         #adding output dir as job name:
-        command_string += " --outdir="+job.experiment_name+" "
+        command_string += " --outdir=statistics/"+job.experiment_name+" "
+        command_string += " --debug-flag="+job.debug_flag+" "
+        command_string += " " + job.config_file+" "
+        adding_symbol = " "
         for field in job.attributes:
+            if adding_symbol == "=":
+                adding_symbol = " "
+            else:
+                adding_symbol = "="
             command_string+=field
-            command_string+=" "
+            command_string+=adding_symbol
         return command_string
 
 
