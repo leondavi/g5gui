@@ -10,7 +10,8 @@ DEBUG_FLAG_ATTR = "--debug-flag"
 CONFIG_FILE_ATTR = "config"
 NUM_THREADS_ATTR = "--num-threads"
 BINARY_ATTR = "--binary"
-list_of_combination_supported_attribute = [DEBUG_FLAG_ATTR,CONFIG_FILE_ATTR,NUM_THREADS_ATTR,BINARY_ATTR]
+BINARY_DIR_ATTR = "binary_dir"
+list_of_combination_supported_attribute = [DEBUG_FLAG_ATTR,CONFIG_FILE_ATTR,NUM_THREADS_ATTR,BINARY_ATTR,BINARY_DIR_ATTR]
 
 class pgp_parser:
 
@@ -33,8 +34,11 @@ class pgp_parser:
                 job[CONFIG_FILE_ATTR] = [job[CONFIG_FILE_ATTR]]
             if type(job[NUM_THREADS_ATTR]) is not list:
                 job[NUM_THREADS_ATTR] = [job[NUM_THREADS_ATTR]]
-            if type(job[BINARY_ATTR]) is not list:
-                job[BINARY_ATTR] = [job[BINARY_ATTR]]
+            if BINARY_ATTR in job.keys():
+                if type(job[BINARY_ATTR]) is not list:
+                    job[BINARY_ATTR] = [job[BINARY_ATTR]]
+            if BINARY_DIR_ATTR in job.keys():
+                job[BINARY_ATTR] = self.parse_binaries_from_given_directory(job[BINARY_DIR_ATTR])
             #More attributes that doesn't support lists combination
             other_attr_list = []
             for key,val in job.items():
@@ -46,12 +50,21 @@ class pgp_parser:
         parallel_jobs = []
         for debug_attr in debug_l:
             for config_attr in config_l:
-                for num_thread_attr in num_threads_l:
+                 for num_thread_attr in num_threads_l:
                     for binary_attr in binary_l:
                         new_job = p_job(experiment_name=str(exp_id)+"_t-"+num_thread_attr+"_"+os.path.splitext(config_attr)[0].split("/")[-1]+"_"+os.path.splitext(binary_attr)[0].split("/")[-1])
                         new_job.add_common_attributes(debug_attr,config_attr,num_thread_attr,binary_attr,other_attr_list)
                         parallel_jobs.append(new_job)
         return parallel_jobs
+
+    def parse_binaries_from_given_directory(self,dir):
+        files = []
+        path = os.path.join(self.gem5_folder,dir)
+        # r=root, d=directories, f = files
+        for r, d, f in os.walk(path):
+            for file in f:
+                files.append(os.path.join(r, file))
+        return files
 
     def get_parallel_jobs(self):
         return self.parallel_jobs
@@ -64,6 +77,7 @@ class p_job:
         self.attributes = attributes
 
     def add_common_attributes(self,debug_attr,config_attr,num_thread_attr,binary_attr,other_attributes):
+        self.attributes = []
         self.config_file = config_attr
         self.debug_flag = debug_attr
         self.attributes+=[NUM_THREADS_ATTR,num_thread_attr,BINARY_ATTR,binary_attr]
