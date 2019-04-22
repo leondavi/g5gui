@@ -10,6 +10,7 @@ DEBUG_FLAG_ATTR = "--debug-flag"
 CONFIG_FILE_ATTR = "config"
 NUM_THREADS_ATTR = "--num-threads"
 BINARY_ATTR = "--binary"
+list_of_combination_supported_attribute = [DEBUG_FLAG_ATTR,CONFIG_FILE_ATTR,NUM_THREADS_ATTR,BINARY_ATTR]
 
 class pgp_parser:
 
@@ -34,16 +35,21 @@ class pgp_parser:
                 job[NUM_THREADS_ATTR] = [job[NUM_THREADS_ATTR]]
             if type(job[BINARY_ATTR]) is not list:
                 job[BINARY_ATTR] = [job[BINARY_ATTR]]
-            self.parallel_jobs+=self.jobs_combinations_creator(idx,job[DEBUG_FLAG_ATTR],job[CONFIG_FILE_ATTR],job[NUM_THREADS_ATTR],job[BINARY_ATTR])
+            #More attributes that doesn't support lists combination
+            other_attr_list = []
+            for key,val in job.items():
+                if key not in list_of_combination_supported_attribute:
+                    other_attr_list+=[key,val]
+            self.parallel_jobs+=self.jobs_combinations_creator(idx,job[DEBUG_FLAG_ATTR],job[CONFIG_FILE_ATTR],job[NUM_THREADS_ATTR],job[BINARY_ATTR],other_attr_list)
 
-    def jobs_combinations_creator(self,exp_id,debug_l,config_l,num_threads_l,binary_l):
+    def jobs_combinations_creator(self,exp_id,debug_l,config_l,num_threads_l,binary_l,other_attr_list):
         parallel_jobs = []
         for debug_attr in debug_l:
             for config_attr in config_l:
                 for num_thread_attr in num_threads_l:
                     for binary_attr in binary_l:
                         new_job = p_job(experiment_name=str(exp_id)+"_t-"+num_thread_attr+"_"+os.path.splitext(config_attr)[0].split("/")[-1]+"_"+os.path.splitext(binary_attr)[0].split("/")[-1])
-                        new_job.add_common_attributes(debug_attr,config_attr,num_thread_attr,binary_attr)
+                        new_job.add_common_attributes(debug_attr,config_attr,num_thread_attr,binary_attr,other_attr_list)
                         parallel_jobs.append(new_job)
         return parallel_jobs
 
@@ -57,10 +63,11 @@ class p_job:
         self.config_file = ""
         self.attributes = attributes
 
-    def add_common_attributes(self,debug_attr,config_attr,num_thread_attr,binary_attr):
+    def add_common_attributes(self,debug_attr,config_attr,num_thread_attr,binary_attr,other_attributes):
         self.config_file = config_attr
         self.debug_flag = debug_attr
         self.attributes+=[NUM_THREADS_ATTR,num_thread_attr,BINARY_ATTR,binary_attr]
+        self.attributes+=other_attributes
 
     # setters
     def set_processs_id(self,processs_id):
@@ -77,3 +84,8 @@ class p_job:
 
     def set_debug_flag(self,value):
         self.debug_flag = value
+
+    #getters
+
+    def get_pid(self):
+        return self.pid

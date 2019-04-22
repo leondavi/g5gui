@@ -23,10 +23,11 @@ class parallel_gem_exec():
     def allocate_jobs_to_processes(self):
         self.clear_finished_processes()
         while self.available_processes_Q() and self.jobs_remain > 0 :
+            self.processes_num_list.append(self.assign_proc_num())
+            self.parallel_jobs[self.job_iterator].set_processs_id(self.processes_num_list[-1])
             newProc = Process(target=self.task,args=[self.parallel_jobs[self.job_iterator]])
             self.job_iterator += 1
             self.processes_list.append(newProc)
-            self.processes_num_list.append(self.assign_proc_num())
             newProc.start()
 
     def kill_all_processes(self):
@@ -54,7 +55,7 @@ class parallel_gem_exec():
         #adding gem5 exec file
         command_string += self.gem5_exec_file_str
         #adding output dir as job name:
-        command_string += " --outdir=statistics/"+job.experiment_name+"_"+st+" "
+        command_string += " --outdir=statistics/p-"+str(job.get_pid())+"_"+job.experiment_name+"_"+st+" "
         command_string += " --debug-flag="+job.debug_flag+" "
         command_string += " " + job.config_file+" "
         adding_symbol = " "
