@@ -2,6 +2,8 @@
 gem5 simulator gui
 In early development stage. 
 Developed for MinorCPU and RISCV
+g5gui is able to run multiple gem5 instances over multiple processes,
+It takes care for job scheduling and results saving. 
 
 Requirements: 
 Tested on Python version > 3.5 
