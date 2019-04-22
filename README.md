@@ -6,7 +6,7 @@ g5gui is able to run multiple gem5 instances over multiple processes,
 It takes care for job scheduling and results saving. 
 
 Requirements: 
-Tested on Python version > 3.5 
+Tested on Python version > 3.5 <br/>
 tkinter package: ```apt-get install python3-tk```<br/>
 Imagetk packages: ``` sudo apt-get install python3-pil python3-pil.imagetk```<br/>
 psutil packages: ```sudo pip3 install psutil```<br/>
