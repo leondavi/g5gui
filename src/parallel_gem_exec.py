@@ -6,6 +6,7 @@ import os
 import time
 import signal
 from files_management import *
+import datetime
 
 class parallel_gem_exec():
     def __init__(self,parallel_jobs,form_dict,numof_processes_avaialable = 1):
@@ -46,11 +47,14 @@ class parallel_gem_exec():
 
 
     def build_command_string(self,job):
+        time.sleep(1)
+        ts = time.time()
+        st = datetime.datetime.fromtimestamp(ts).strftime('%m-%d-%Y_%H-%M-%S')
         command_string = ""
         #adding gem5 exec file
         command_string += self.gem5_exec_file_str
         #adding output dir as job name:
-        command_string += " --outdir=statistics/"+job.experiment_name+" "
+        command_string += " --outdir=statistics/"+job.experiment_name+"_"+st+" "
         command_string += " --debug-flag="+job.debug_flag+" "
         command_string += " " + job.config_file+" "
         adding_symbol = " "

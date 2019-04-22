@@ -156,7 +156,7 @@ class ScritptRunWin:
 
     def action_run(self):
         self.stop = False
-        pgp_p = pgp_parser(self.dict_properties[PATH_TO_SCRIPT])
+        pgp_p = pgp_parser(self.dict_properties[PATH_TO_SCRIPT],self.gem5_build_dir_str)
         res = pgp_p.parse()
         if res == ERROR_DEF :
             messagebox.showerror("Error","Only pgp files are supported")
