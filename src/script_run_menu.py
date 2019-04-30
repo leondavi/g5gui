@@ -1,10 +1,8 @@
 import tkinter as tk # Pyth
 from sqlite3 import OptimizedUnicode
 
-from files_management import *
 from tkinter import messagebox
 from tkinter import filedialog
-import subprocess
 from scrframe import *
 from definitions import *
 from demopanels import MsgPanel, SeeDismissPanel
@@ -12,6 +10,7 @@ from parallel_gem_exec import *
 import time
 import threading
 from support import *
+import math
 
 SCRIPT_RUN_MENU_WINSIZE = "800x750"
 USER_PROPERTIES_FILE = "script_prop"
@@ -150,12 +149,12 @@ class ScritptRunWin:
 
 
     def add_progress_bar(self,frame,row,column,process_id):
-        name_frame = MsgPanel(frame,["P-"+str(process_id)],row)
+        name_frame = MsgPanel(frame,["P-"+str(process_id)],row,column)
         row+=1
         progress_var = DoubleVar()
         progress_var.set(0)
-        pb = Progressbar(frame,mode='determinate',length=300,variable=progress_var,maximum=100)
-        pb.grid(row=row,column=column,pady=5)
+        pb = Progressbar(frame,mode='determinate',length=200,variable=progress_var,maximum=100)
+        pb.grid(row=row,column=column,pady=5,padx=5)
         return (process_id,pb,progress_var)
 
 
@@ -195,8 +194,8 @@ class ScritptRunWin:
             messagebox.showerror("Error","Only pgp files are supported")
         jobs_count = len(pgp_p.get_parallel_jobs())
         self.progress_bars = []
-        for i in range(0,2*self.processes_available,2):
-            self.progress_bars.append(self.add_progress_bar(self.frameBottom, i, 0, int(i/2)))
+        for i in range(0,self.processes_available):
+            self.progress_bars.append(self.add_progress_bar(self.frameBottom, 2*int(math.floor(i/2)), i % 2,i))
         out_dir = os.path.join(self.gem5_build_dir_str,DEFAULT_OUTPUT_DIR)
         if self.default_out_dir_var.get() == 0:
             out_dir=self.dict_properties[OUTPUT_DIR]
