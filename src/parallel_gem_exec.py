@@ -9,7 +9,7 @@ from files_management import *
 import datetime
 
 class parallel_gem_exec():
-    def __init__(self,parallel_jobs,form_dict,numof_processes_avaialable = 1):
+    def __init__(self,parallel_jobs,form_dict,output_dir,numof_processes_avaialable = 1):
         self.parallel_jobs = parallel_jobs
         self.numof_processes_avaialable = numof_processes_avaialable
         self.processes_list = []
@@ -19,6 +19,7 @@ class parallel_gem_exec():
         self.job_iterator = 0
         self.gem5_dir_str = form_dict[BUILD_DIR]
         self.gem5_exec_file_str = form_dict[GEM5_EXECUTE_FILE]
+        self.output_dir = output_dir
 
     def allocate_jobs_to_processes(self):
         self.clear_finished_processes()
@@ -55,8 +56,9 @@ class parallel_gem_exec():
         #adding gem5 exec file
         command_string += self.gem5_exec_file_str
         #adding output dir as job name:
-        command_string += " --outdir=statistics/p-"+str(job.get_pid())+"_"+job.experiment_name+"_"+st+" "
-        command_string += " --debug-flag="+job.debug_flag+" "
+        command_string += " --outdir="+self.output_dir+"/p-"+str(job.get_pid())+"_"+job.experiment_name+"_"+st+" "
+        if job.debug_flag != "x":
+            command_string += " --debug-flag="+job.debug_flag+" "
         command_string += " " + job.config_file+" "
         adding_symbol = " "
         for field in job.attributes:
@@ -71,6 +73,7 @@ class parallel_gem_exec():
 
     def assign_proc_num(self):
         proc_num = 0
+        self.processes_num_list.sort()
         while(proc_num in self.processes_num_list):
             proc_num += 1
         return proc_num

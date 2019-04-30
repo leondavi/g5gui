@@ -1,4 +1,6 @@
 import tkinter as tk # Pyth
+from sqlite3 import OptimizedUnicode
+
 from files_management import *
 from tkinter import messagebox
 from tkinter import filedialog
@@ -14,7 +16,9 @@ from support import *
 SCRIPT_RUN_MENU_WINSIZE = "800x750"
 USER_PROPERTIES_FILE = "script_prop"
 
+DEFAULT_OUTPUT_DIR = "statistics"
 PATH_TO_SCRIPT = 1
+OUTPUT_DIR = 2
 
 
 class ScritptRunWin:
@@ -24,12 +28,14 @@ class ScritptRunWin:
         self.dict_properties = dict()
         self.form_dict = previous_win_form
 
+
         #Load params
         if check_file_exist(USER_PROPERTIES_FILE):
             self.dict_properties = load_obj(USER_PROPERTIES_FILE)
-        # Init default params
         else:
+            # Init default params
             self.dict_properties[PATH_TO_SCRIPT] = ""
+            self.dict_properties[OUTPUT_DIR] = DEFAULT_OUTPUT_DIR
 
 
     def generate_sub_window(self):
@@ -75,17 +81,40 @@ class ScritptRunWin:
         return False
 
     def add_file_browser_and_textbar(self,frame,row):
-        MsgPanel(self.window,["Choose script file to run multiple gem5 tests"],0,0)
+        MsgPanel(frame,["Choose script file to run multiple gem5 tests"],row,0)
         self.txtBox = Text(frame, width=80, height=1, state=NORMAL)
         self.txtBox.delete(1.0,END)
         self.txtBox.insert(END,self.dict_properties[PATH_TO_SCRIPT])
         self.txtBox['state'] = DISABLED
-        self.BrowseButton = Button(frame, text='Browse', command = lambda: self.browse(self.window,self.txtBox))
-
+        self.BrowseButton = Button(frame, text='Browse', command = lambda: self.browse(self.window,self.txtBox,PATH_TO_SCRIPT))
+        row+=1
         self.txtBox.grid(row=row,column=0,padx=5)
         self.BrowseButton.grid(row=row,column=1)
         row+=1
+        MsgPanel(frame, ["Choose output folder or mark the default statistics"], row,0 )
+        self.txtBoxOutputDir = Text(frame, width=80, height=1, state=NORMAL)
+        self.txtBoxOutputDir.delete(1.0, END)
+        if OUTPUT_DIR not in self.dict_properties.keys():
+            self.dict_properties[OUTPUT_DIR] = DEFAULT_OUTPUT_DIR
+        self.txtBoxOutputDir.insert(END, self.dict_properties[OUTPUT_DIR])
+        self.txtBoxOutputDir['state'] = DISABLED
+        self.BrowseButtonOutputDir = Button(frame, text='Browse', command=lambda: self.browse(self.window, self.txtBoxOutputDir,OUTPUT_DIR,True))
+        self.default_out_dir_var = IntVar()
+        self.default_out_dir_var.set(0)
+        self.DefaultOutdirCheckButton = Checkbutton(frame,text="Default Dir",variable=self.default_out_dir_var,command=self.default_dir_checkbutton_action)
+        row += 1
+        self.txtBoxOutputDir.grid(row=row, column=0, padx=5)
+        self.BrowseButtonOutputDir.grid(row=row, column=1)
+        row += 1
+        self.DefaultOutdirCheckButton.grid(row=row,column=0)
+        row += 1
         return row
+
+    def default_dir_checkbutton_action(self):
+        if self.default_out_dir_var.get() == 1:
+            self.BrowseButtonOutputDir['state'] = DISABLED
+        else:
+            self.BrowseButtonOutputDir['state'] = NORMAL
 
     def add_process_amount_bar(self,frame):
         cur_row = 0
@@ -139,14 +168,18 @@ class ScritptRunWin:
         #  l.pack(side="top", fill="both", expand=True, padx=100, pady=100)
         return t
 
-    def browse(self,window,textBox):
-        filename = filedialog.askopenfile(parent=window,mode='rb',title='Choose script file')
-        self.dict_properties[PATH_TO_SCRIPT] = filename.name
+    def browse(self,window,textBox,dict_attr,dir_mode=False):
+        if dir_mode :
+            path = filedialog.askdirectory()
+            self.dict_properties[dict_attr] = path
+        else:
+            path = filedialog.askopenfile(parent=window,mode='rb',title='Choose script file')
+            self.dict_properties[dict_attr] = path.name
         save_obj(self.dict_properties,USER_PROPERTIES_FILE)
         #updating textbox
         textBox['state'] = NORMAL
         textBox.delete(1.0, END)
-        textBox.insert(END, self.dict_properties[PATH_TO_SCRIPT])
+        textBox.insert(END, self.dict_properties[dict_attr])
         textBox['state'] = DISABLED
 
     def action_stop(self):
@@ -164,7 +197,10 @@ class ScritptRunWin:
         self.progress_bars = []
         for i in range(0,2*self.processes_available,2):
             self.progress_bars.append(self.add_progress_bar(self.frameBottom, i, 0, int(i/2)))
-        self.pge = parallel_gem_exec(pgp_p.get_parallel_jobs(),self.form_dict,self.processes_available)
+        out_dir = os.path.join(self.gem5_build_dir_str,DEFAULT_OUTPUT_DIR)
+        if self.default_out_dir_var.get() == 0:
+            out_dir=self.dict_properties[OUTPUT_DIR]
+        self.pge = parallel_gem_exec(pgp_p.get_parallel_jobs(),self.form_dict,out_dir,self.processes_available)
         self.remained_job_text.set("Remained jobs:" + str(self.pge.get_jobs_remained()))
         self.thread = threading.Thread(target=self.jobs_processing, args=[self.pge])
         self.thread.start()
