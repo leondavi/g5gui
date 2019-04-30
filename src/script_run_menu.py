@@ -215,6 +215,7 @@ class ScritptRunWin:
                 self.progress_bars[bar[0]][2].set(bar[1])
             time.sleep(0.1)
             #print("in while")
+        self.remained_job_text.set("Remained jobs:" + 0)
         print("stopped")
         for bar in self.progress_bars:
             bar[2].set(0)
