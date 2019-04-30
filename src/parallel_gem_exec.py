@@ -36,6 +36,8 @@ class parallel_gem_exec():
             if proc.is_alive:
                 os.kill(proc.pid,signal.SIGKILL)
         os.system("killall gem5.opt")
+        self.jobs_remain = 0
+        self.parallel_jobs = []
 
     def task(self,job):
         command_string = self.build_command_string(job)
