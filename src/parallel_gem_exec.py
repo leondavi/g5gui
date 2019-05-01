@@ -26,8 +26,10 @@ class parallel_gem_exec():
 
     def allocate_jobs_to_processes(self):
         self.clear_finished_processes()
-        while self.available_processes_Q() and self.jobs_remain > 0 :
+        while self.available_processes_Q() and self.jobs_remain > 0 and self.job_iterator<len(self.parallel_jobs):
             self.processes_num_list.append(self.assign_proc_num())
+            self.processes_num_list[-1]
+            self.parallel_jobs[self.job_iterator]
             self.parallel_jobs[self.job_iterator].set_processs_id(self.processes_num_list[-1])
             job = self.parallel_jobs[self.job_iterator]
             command_string = self.build_command_string(job)
