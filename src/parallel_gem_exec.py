@@ -8,6 +8,7 @@ import signal
 from files_management import *
 import datetime
 import subprocess
+import time
 
 class parallel_gem_exec():
     def __init__(self,parallel_jobs,form_dict,output_dir,numof_processes_avaialable = 1):
@@ -33,6 +34,7 @@ class parallel_gem_exec():
             print("Job name: " + job.experiment_name)
             print("Command executed: " + command_string)
             cpp_process = Popen(command_string, cwd=self.gem5_dir_str, stdout=PIPE, shell=True, preexec_fn=None)
+            time.sleep(0.3)
             children = self.get_children_processes(cpp_process)
             for child in children:
                 child_p_name = psutil.Process(child.pid).name()
@@ -129,9 +131,10 @@ class parallel_gem_exec():
             if pid!=-1 :
                 if(psutil.pid_exists(pid)):
                     p = psutil.Process(pid)
-                    sub_p = subprocess.Popen("top -b -n 1 -p %d | tail -n 1 | head -n 1 | awk '{print $1, $9}'" % pid,
+                    sub_p = subprocess.Popen("top -b -n 1 -p %d -d 10 | tail -n 1 | head -n 1 | awk '{print $1, $9}'" % pid,
                                                      shell=True,stdout=subprocess.PIPE)
                     cpu_percentage = sub_p.stdout.read()
+                    #time.sleep(0.1)
                     if len(cpu_percentage) > 1:
                         try:
                             cpu_usage = int(float(cpu_percentage.decode("utf-8").replace("\n", "").split(" ")[1]))
