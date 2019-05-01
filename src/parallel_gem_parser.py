@@ -54,6 +54,7 @@ class pgp_parser:
                     for binary_attr in binary_l:
                         new_job = p_job(experiment_name=str(exp_id)+"_t-"+num_thread_attr+"_"+os.path.splitext(config_attr)[0].split("/")[-1]+"_"+os.path.splitext(binary_attr)[0].split("/")[-1])
                         new_job.add_common_attributes(debug_attr,config_attr,num_thread_attr,binary_attr,other_attr_list)
+
                         parallel_jobs.append(new_job)
         return parallel_jobs
 

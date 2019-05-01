@@ -7,6 +7,7 @@ import time
 import signal
 from files_management import *
 import datetime
+import subprocess
 
 class parallel_gem_exec():
     def __init__(self,parallel_jobs,form_dict,output_dir,numof_processes_avaialable = 1):
@@ -20,16 +21,27 @@ class parallel_gem_exec():
         self.gem5_dir_str = form_dict[BUILD_DIR]
         self.gem5_exec_file_str = form_dict[GEM5_EXECUTE_FILE]
         self.output_dir = output_dir
+        self.cpp_process_pid_list = [-1]*numof_processes_avaialable
 
     def allocate_jobs_to_processes(self):
         self.clear_finished_processes()
         while self.available_processes_Q() and self.jobs_remain > 0 :
             self.processes_num_list.append(self.assign_proc_num())
             self.parallel_jobs[self.job_iterator].set_processs_id(self.processes_num_list[-1])
-            newProc = Process(target=self.task,args=[self.parallel_jobs[self.job_iterator]])
+            job = self.parallel_jobs[self.job_iterator]
+            command_string = self.build_command_string(job)
+            print("Job name: " + job.experiment_name)
+            print("Command executed: " + command_string)
+            cpp_process = Popen(command_string, cwd=self.gem5_dir_str, stdout=PIPE, shell=True, preexec_fn=None)
+            children = self.get_children_processes(cpp_process)
+            for child in children:
+                child_p_name = psutil.Process(child.pid).name()
+                if "gem5" in child_p_name:
+                    self.cpp_process_pid_list[job.get_pid()] = child.pid
+            monitor_proc = Process(target=self.task,args=[job,cpp_process])
             self.job_iterator += 1
-            self.processes_list.append(newProc)
-            newProc.start()
+            self.processes_list.append(monitor_proc)
+            monitor_proc.start()
 
     def kill_all_processes(self):
         for proc in self.processes_list:
@@ -39,16 +51,24 @@ class parallel_gem_exec():
         self.jobs_remain = 0
         self.parallel_jobs = []
 
-    def task(self,job):
-        command_string = self.build_command_string(job)
-        process = Popen(command_string, cwd=self.gem5_dir_str, stdout=PIPE, shell=True, preexec_fn=os.setsid)
-        print("Job name: "+job.experiment_name)
-        print("Command executed: "+command_string)
-        alive = process.poll() == None
-        while alive:
+    def task(self,job,process):
+        children = self.get_children_processes(process)
+        at_least_one_alive = True
+        while at_least_one_alive:
             time.sleep(0.5)
-            alive = process.poll() == None
+            parent_alive = psutil.pid_exists(process.pid)
+            one_of_children_alive = False
+            for child_proc in children:
+                if psutil.pid_exists(child_proc.pid):
+                    one_of_children_alive = True
+            at_least_one_alive = parent_alive or one_of_children_alive
 
+    def get_children_processes(self,parent_proc):
+        try:
+            parent = psutil.Process(parent_proc.pid)
+        except psutil.NoSuchProcess:
+            return
+        return parent.children(recursive=True)
 
     def build_command_string(self,job):
         time.sleep(1)
@@ -75,8 +95,9 @@ class parallel_gem_exec():
 
     def assign_proc_num(self):
         proc_num = 0
-        self.processes_num_list.sort()
-        while(proc_num in self.processes_num_list):
+        process_num_list_sorted = self.processes_num_list
+        process_num_list_sorted.sort()
+        while(proc_num in process_num_list_sorted):
             proc_num += 1
         return proc_num
 
@@ -87,6 +108,7 @@ class parallel_gem_exec():
             proc.join(timeout=0)
             if not proc.is_alive():
                 self.jobs_remain -= 1
+                self.cpp_process_pid_list[self.processes_num_list[idx]] = -1
             else:
                 survived_clear.append(proc)
                 survived_clear_nums.append(self.processes_num_list[idx])
@@ -99,17 +121,26 @@ class parallel_gem_exec():
         return self.jobs_remain
 
     def get_processes_cpu_usage(self):
-        processes_cpu_usage_list = []
-        for idx,proc in enumerate(self.processes_list):
+        processes_cpu_usage_list = list(range(0,self.numof_processes_avaialable))
+        for idx,proc_attr in enumerate(processes_cpu_usage_list):
+            processes_cpu_usage_list[idx] = (idx,0)
+        for idx,pid in enumerate(self.cpp_process_pid_list):
             cpu_usage = 0
-            if(psutil.pid_exists(proc.pid)):
-                p = psutil.Process(proc.pid)
-                cpu_usage = p.cpu_percent()
-                if cpu_usage == None:
-                    cpu_usage = 0
-                else:
-                    cpu_usage = 100
-            processes_cpu_usage_list.append((self.processes_num_list[idx],cpu_usage))
+            if pid!=-1 :
+                if(psutil.pid_exists(pid)):
+                    p = psutil.Process(pid)
+                    sub_p = subprocess.Popen("top -b -n 1 -p %d | tail -n 1 | head -n 1 | awk '{print $1, $9}'" % pid,
+                                                     shell=True,stdout=subprocess.PIPE)
+                    cpu_percentage = sub_p.stdout.read()
+                    if len(cpu_percentage) > 1:
+                        try:
+                            cpu_usage = int(float(cpu_percentage.decode("utf-8").replace("\n", "").split(" ")[1]))
+                        except ValueError:
+                            cpu_usage = 0
+                    else:
+                        cpu_usage = 0
+                if idx < len(self.processes_num_list):
+                    processes_cpu_usage_list[self.processes_num_list[idx]]=((self.processes_num_list[idx],cpu_usage))
         return processes_cpu_usage_list
 
 
