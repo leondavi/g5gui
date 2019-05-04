@@ -9,6 +9,7 @@ Requirements:
 Tested on Python version > 3.5 <br/>
 tkinter package: ```apt-get install python3-tk```<br/>
 Imagetk packages: ``` sudo apt-get install python3-pil python3-pil.imagetk```<br/>
+pip3: ```sudo apt install python3-pip```<br/>
 psutil packages: ```sudo pip3 install psutil```<br/>
 
 Running gui open command inside /src directory: ```$: python3 main.py``` 
