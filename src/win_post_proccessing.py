@@ -1,15 +1,23 @@
 import tkinter as tk
+from builtins import list
+from contextlib import redirect_stderr
+
+from PIL.Image import NORMAL
+
 from files_management import *
 from scrframe import *
 import pandas as pd
 import re
 from support import *
+import time
 
 USER_PROPERTIES_FILE = "post_proc_prop"
 OUTPUT_DIR = 2
 ATTRIBUTES_TO_EXTRACT_LIST = 3
 
 SCRIPT_RUN_MENU_WINSIZE = "700x500"
+
+CSV_FILE_NAME = "stats_combined_results"
 
 JOB_TRACK_ATTRIBUTES = ["-num-threads","--binary"]
 
@@ -45,9 +53,11 @@ class PostProcessingRunWin():
         seperator = ','
         self.set_text_textbox(self.txt_box,seperator.join(self.dict_properties[ATTRIBUTES_TO_EXTRACT_LIST]))
 
-
-
-        self.generate_button = Button(self.frameTop,text="Generate",command=self.action_generate).grid(row=2)
+        self.label_txtvar = StringVar()
+        self.generate_button = Button(self.frameTop,text="Generate",command=self.action_generate)
+        self.generate_button.grid(row=2)
+        self.generate_status_label = Label(self.frameTop,textvar=self.label_txtvar).grid(row=3)
+        self.label_txtvar.set("Ready")
 
     def set_text_textbox(self,txtbox,value):
         txtbox.delete(1.0, tk.END)
@@ -57,6 +67,11 @@ class PostProcessingRunWin():
         self.retrieve_input_from_txtbox()
         extractor = stats_extractor(self.output_dir,self.dict_properties[ATTRIBUTES_TO_EXTRACT_LIST],self.jobs_tracker_file )
         extractor.generate_csv()
+        self.label_txtvar.set("Generated")
+        self.generate_button.config(state = DISABLED)
+        time.sleep(3)
+        self.generate_button.config(state = NORMAL)
+        self.label_txtvar.set("Ready")
 
 
     def retrieve_input_from_txtbox(self):
@@ -106,8 +121,13 @@ class stats_extractor():
                     else:
                         dict_update_key_multival(jobs_dict,jobs_dict_key,(param[0],param[1]))
 
-        table_headers = ["threads","app"]+self.attributes_to_extract
-        data = pd.DataFrame(columns=table_headers)
+        reduced_attributees = []
+        for attr in self.attributes_to_extract:
+            reduced_attributees.append(attr.split(".")[-1])
+
+        table_headers = ["threads","app"]+reduced_attributees
+        df = pd.DataFrame(columns=table_headers)
+
 
         # getting all stats files
         for root, directories, filenames in os.walk(self.root_dir):
@@ -119,7 +139,19 @@ class stats_extractor():
                     #Tuple: (directory,fullpathtofile,stats_attr)
                     self.stats_files_list.append(os.path.join(root,filename))
                     current_attributes = self.extract_stats_attributes(self.stats_files_list[-1])
-                    #generate table row
+                    if len(current_attributes) > 0:
+                        row_list = []
+                        #generate table row
+                        list_of_param_attributes = jobs_dict[root]
+                        for attribute in list_of_param_attributes:
+                            row_list.append(attribute[1])
+                        tmplist = [0]*len(self.attributes_to_extract)
+                        for attribute in current_attributes:
+                            tmplist[self.attributes_to_extract.index(attribute[0])] = attribute[1]
+                        row_list+=tmplist
+    #modDfObj = dfObj.append(pd.Series(['Raju', 21, 'Bangalore', 'India'], index=dfObj.columns ), ignore_index=True)
+                        df = df.append(pd.Series(row_list,index=df.columns),ignore_index=True)
+        df.to_csv(os.path.join(self.root_dir,CSV_FILE_NAME)+".csv")
 
 
 
@@ -134,8 +166,7 @@ class stats_extractor():
             for attribute in self.attributes_to_extract:
                 if attribute in line:
                     if dots_pattern.match(attribute):
-                        attribute_last = attribute.split(".")[-1]
-                        attributes_list.append((attribute_last,line.split()[1]))
+                        attributes_list.append((attribute,line.split()[1]))
                     else:
                         attributes_list.append((attribute, line.split()[1]))
 
