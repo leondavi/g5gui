@@ -28,14 +28,18 @@ class ScritptRunWin:
         self.dict_properties = dict()
         self.form_dict = previous_win_form
 
+        self.dict_properties[PATH_TO_SCRIPT] = ""
+        self.dict_properties[OUTPUT_DIR] = DEFAULT_OUTPUT_DIR
 
         #Load params
         if check_file_exist(USER_PROPERTIES_FILE):
             self.dict_properties = load_obj(USER_PROPERTIES_FILE)
-        else:
-            # Init default params
-            self.dict_properties[PATH_TO_SCRIPT] = ""
-            self.dict_properties[OUTPUT_DIR] = DEFAULT_OUTPUT_DIR
+        # if OUTPUT_DIR not in self.dict_properties.keys() or PATH_TO_SCRIPT not in self.dict_properties.keys():
+        #     # Init default params
+        if not isinstance(self.dict_properties[OUTPUT_DIR], str):
+            self.dict_properties[OUTPUT_DIR] = DEFAULT_OUTPUT_DIR #Patch
+
+        save_obj(self.dict_properties,USER_PROPERTIES_FILE)
 
         self.jobs_tracker = os.path.join(self.dict_properties[OUTPUT_DIR], JOBS_TRACKING_FILE)
 
