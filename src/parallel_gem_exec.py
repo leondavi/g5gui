@@ -9,6 +9,9 @@ from files_management import *
 import datetime
 import subprocess
 import time
+from time import gmtime, strftime
+
+JOBS_TRACKING_FILE = "job_tracker.txt"
 
 class parallel_gem_exec():
     def __init__(self,parallel_jobs,form_dict,output_dir,numof_processes_avaialable = 1):
@@ -23,8 +26,11 @@ class parallel_gem_exec():
         self.gem5_exec_file_str = form_dict[GEM5_EXECUTE_FILE]
         self.output_dir = output_dir
         self.cpp_process_pid_list = [-1]*numof_processes_avaialable
+        self.jobs_tracker = os.path.join(self.output_dir, JOBS_TRACKING_FILE)
+
 
     def allocate_jobs_to_processes(self):
+        self.jobs_track_file = open(self.jobs_tracker, "a+")
         self.clear_finished_processes()
         while self.available_processes_Q() and self.jobs_remain > 0 and self.job_iterator<len(self.parallel_jobs):
             self.processes_num_list.append(self.assign_proc_num())
@@ -46,6 +52,8 @@ class parallel_gem_exec():
             self.job_iterator += 1
             self.processes_list.append(monitor_proc)
             monitor_proc.start()
+            self.jobs_track_file.write(strftime("%Y-%m-%d %H:%M:%S", gmtime())+" job: "+job.experiment_name+" cmd: "+command_string+"\n")
+        self.jobs_track_file.close()
 
     def kill_all_processes(self):
         for proc in self.processes_list:
@@ -119,6 +127,8 @@ class parallel_gem_exec():
         self.processes_list = survived_clear
         self.processes_num_list = survived_clear_nums
 
+    def get_jobs_tracker_filename(self):
+        return os.path.join(self.output_dir,JOBS_TRACKING_FILE)
 
     # Getters
     def get_jobs_remained(self):

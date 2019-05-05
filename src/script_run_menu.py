@@ -11,6 +11,7 @@ import time
 import threading
 from support import *
 import math
+from win_post_proccessing import  *
 
 SCRIPT_RUN_MENU_WINSIZE = "800x750"
 USER_PROPERTIES_FILE = "script_prop"
@@ -35,6 +36,8 @@ class ScritptRunWin:
             # Init default params
             self.dict_properties[PATH_TO_SCRIPT] = ""
             self.dict_properties[OUTPUT_DIR] = DEFAULT_OUTPUT_DIR
+
+        self.jobs_tracker = os.path.join(self.dict_properties[OUTPUT_DIR], JOBS_TRACKING_FILE)
 
 
     def generate_sub_window(self):
@@ -133,6 +136,8 @@ class ScritptRunWin:
         self.RunButton.grid(row=cur_row,column=1,pady=5)
         self.StopButton = Button(frame, text='Stop', command = self.action_stop)
         self.StopButton.grid(row=cur_row,column=2,pady=5)
+        self.PostProcessingButton = Button(frame, text='Post Processing', command=self.action_post_processing)
+        self.PostProcessingButton.grid(row=cur_row, column=0, pady=5)
         cur_row += 1
         self.remained_job_text = StringVar()
         self.remained_job_text.set("Remained jobs: -")
@@ -185,6 +190,11 @@ class ScritptRunWin:
         self.stop = True
         self.pge.kill_all_processes()
 
+    def action_post_processing(self):
+        ppw = PostProcessingRunWin(self.window,self.dict_properties,self.jobs_tracker)
+        ppw.generate_sub_window()
+
+        pass
 
     def action_run(self):
         self.stop = False
