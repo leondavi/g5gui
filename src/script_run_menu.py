@@ -127,7 +127,7 @@ class ScritptRunWin:
         self.processes_available = 1
         self.processes_label = Label(frame, textvariable=slider).grid(row=cur_row, column=1)
         cur_row += 1
-        self.processes_scale = Scale(frame, from_=1, to_=8, length=300,variable = slider,command = lambda x: self.discrete_scale(slider)).grid(row=cur_row,column=1)
+        self.processes_scale = Scale(frame, from_=1, to_=20, length=300,variable = slider,command = lambda x: self.discrete_scale(slider)).grid(row=cur_row,column=1)
 
     def add_buttons(self,frame):
 
@@ -148,7 +148,7 @@ class ScritptRunWin:
 
     def discrete_scale(self, slider):
         value = slider.get()
-        newvalue = min(range(1, 9), key=lambda x: abs(x - float(value)))
+        newvalue = min(range(1, 21), key=lambda x: abs(x - float(value)))
         slider.set(newvalue)
         self.processes_available = newvalue
 
