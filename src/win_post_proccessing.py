@@ -103,6 +103,8 @@ class stats_extractor():
     def generate_csv(self):
 
         jobs_dict = dict()
+        params_headers = []
+        first_file_flag = True
         # Loading jobs from jobs tracker
         track_file_fo = open(self.jobs_tracker_file,"r")
         for line in track_file_fo.readlines():
@@ -114,18 +116,21 @@ class stats_extractor():
                 if pattern.match(param_attribute) or pattern2.match(param_attribute):
                     param = param_attribute.split("=")
                     if param[0]=="--outdir":
-                        jobs_dict_key = param[-1]
+                        jobs_dict_key = param[-1].split("/")[-1]
                     elif param[0]=="--binary":
                         app = param[1].split("/")[-1]
                         dict_update_key_multival(jobs_dict,jobs_dict_key,(param[0],app))
                     else:
                         dict_update_key_multival(jobs_dict,jobs_dict_key,(param[0],param[1]))
+                        if first_file_flag:
+                            params_headers.append(param[0])
+            first_file_flag = False
 
         reduced_attributees = []
         for attr in self.attributes_to_extract:
             reduced_attributees.append(attr.split(".")[-1])
 
-        table_headers = ["threads","app"]+reduced_attributees
+        table_headers = ["app"]+params_headers+reduced_attributees
         df = pd.DataFrame(columns=table_headers)
 
 
@@ -139,10 +144,11 @@ class stats_extractor():
                     #Tuple: (directory,fullpathtofile,stats_attr)
                     self.stats_files_list.append(os.path.join(root,filename))
                     current_attributes = self.extract_stats_attributes(self.stats_files_list[-1])
-                    if len(current_attributes) > 0:
+                    curr_dir = root.split("/")[-1]
+                    if (len(current_attributes) > 0) and (curr_dir in jobs_dict.keys()):
                         row_list = []
                         #generate table row
-                        list_of_param_attributes = jobs_dict[root]
+                        list_of_param_attributes = jobs_dict[curr_dir]
                         for attribute in list_of_param_attributes:
                             row_list.append(attribute[1])
                         tmplist = [0]*len(self.attributes_to_extract)
