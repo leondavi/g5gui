@@ -1,6 +1,7 @@
 
 import ast
 import os
+import itertools
 
 ERROR_DEF = -1
 SUCCESS_DEF = 0
@@ -27,35 +28,46 @@ class pgp_parser:
         else:
             return ERROR_DEF
         self.parallel_jobs = []
-        for idx,job in enumerate(data):
-            if type(job[DEBUG_FLAG_ATTR]) is not list:
-                job[DEBUG_FLAG_ATTR] = [job[DEBUG_FLAG_ATTR]]
-            if type(job[CONFIG_FILE_ATTR]) is not list:
-                job[CONFIG_FILE_ATTR] = [job[CONFIG_FILE_ATTR]]
-            if type(job[NUM_THREADS_ATTR]) is not list:
-                job[NUM_THREADS_ATTR] = [job[NUM_THREADS_ATTR]]
-            if BINARY_ATTR in job.keys():
-                if type(job[BINARY_ATTR]) is not list:
-                    job[BINARY_ATTR] = [job[BINARY_ATTR]]
-            if BINARY_DIR_ATTR in job.keys():
-                job[BINARY_ATTR] = self.parse_binaries_from_given_directory(job[BINARY_DIR_ATTR])
+
+        jobs_dict_list = []
+
+        for attributes_dict in data:
+            #fixing dictionary
+            fixed_dict = dict()
+            for key,value in attributes_dict.items():
+                if value == 'x' and key != DEBUG_FLAG_ATTR: #debug is the only case which has to be included
+                    pass
+                elif type(value)!=list:
+                    fixed_dict[key] = [value]
+                else:
+                    fixed_dict[key] = value
+
+            jobs_dict = [dict(zip(fixed_dict,v)) for v in itertools.product(*fixed_dict.values())]
+            jobs_dict_list.append(jobs_dict)
+
+        exp_idx = 0
+        for jobs_bunch in jobs_dict_list:
+            for idx,job in enumerate(jobs_bunch):
+                print("idx: "+str(idx)+" job: "+str(job))
+                if BINARY_DIR_ATTR in job.keys():
+                    job[BINARY_ATTR] = self.parse_binaries_from_given_directory(job[BINARY_DIR_ATTR])
             #More attributes that doesn't support lists combination
-            other_attr_list = []
-            for key,val in job.items():
-                if key not in list_of_combination_supported_attribute:
-                    other_attr_list+=[key,val]
-            self.parallel_jobs+=self.jobs_combinations_creator(idx,job[DEBUG_FLAG_ATTR],job[CONFIG_FILE_ATTR],job[NUM_THREADS_ATTR],job[BINARY_ATTR],other_attr_list)
+                other_attr_list = []
+                for key,val in job.items():
+                    if key not in list_of_combination_supported_attribute:
+                        other_attr_list+=[key,val]
+                self.parallel_jobs+=self.jobs_combinations_creator(exp_idx,job[DEBUG_FLAG_ATTR],job[CONFIG_FILE_ATTR],job[NUM_THREADS_ATTR],job[BINARY_ATTR],other_attr_list)
+                exp_idx += 1
 
     def jobs_combinations_creator(self,exp_id,debug_l,config_l,num_threads_l,binary_l,other_attr_list):
+        if type(binary_l) != list:
+            binary_l = [binary_l]
         parallel_jobs = []
-        for debug_attr in debug_l:
-            for config_attr in config_l:
-                 for num_thread_attr in num_threads_l:
-                    for binary_attr in binary_l:
-                        new_job = p_job(experiment_name=str(exp_id)+"_t-"+num_thread_attr+"_"+os.path.splitext(config_attr)[0].split("/")[-1]+"_"+os.path.splitext(binary_attr)[0].split("/")[-1])
-                        new_job.add_common_attributes(debug_attr,config_attr,num_thread_attr,binary_attr,other_attr_list)
+        for binary_attr in binary_l:
+            new_job = p_job(experiment_name=str(exp_id)+"_t-"+num_threads_l+"_"+os.path.splitext(config_l)[0].split("/")[-1]+"_"+os.path.splitext(binary_attr)[0].split("/")[-1])
+            new_job.add_common_attributes(debug_l,config_l,num_threads_l,binary_attr,other_attr_list)
 
-                        parallel_jobs.append(new_job)
+            parallel_jobs.append(new_job)
         return parallel_jobs
 
     def parse_binaries_from_given_directory(self,dir):

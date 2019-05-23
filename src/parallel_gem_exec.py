@@ -85,7 +85,7 @@ class parallel_gem_exec():
     def build_command_string(self,job):
         time.sleep(1)
         ts = time.time()
-        st = datetime.datetime.fromtimestamp(ts).strftime('%m-%d-%Y_%H-%M-%S')
+        st = ""#datetime.datetime.fromtimestamp(ts).strftime('%m-%d-%Y_%H-%M-%S')
         command_string = ""
         #adding gem5 exec file
         command_string += self.gem5_exec_file_str
