@@ -30,7 +30,11 @@ class parallel_gem_exec():
 
 
     def allocate_jobs_to_processes(self):
-        self.jobs_track_file = open(self.jobs_tracker, "a+")
+        os.makedirs(os.path.dirname(self.jobs_tracker),exist_ok=True)
+        if os.path.isfile(self.jobs_tracker):
+            self.jobs_track_file = open(self.jobs_tracker, "a+")
+        else: #doesn't exist
+            self.jobs_track_file = open(self.jobs_tracker, "w+")
         self.clear_finished_processes()
         while self.available_processes_Q() and self.jobs_remain > 0 and self.job_iterator<len(self.parallel_jobs):
             self.processes_num_list.append(self.assign_proc_num())
