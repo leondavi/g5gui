@@ -1,15 +1,9 @@
-import tkinter as tk # Pyth
-from sqlite3 import OptimizedUnicode
-
 from tkinter import messagebox
 from tkinter import filedialog
-from scrframe import *
-from definitions import *
-from demopanels import MsgPanel, SeeDismissPanel
+from demopanels import MsgPanel
 from parallel_gem_exec import *
-import time
 import threading
-from support import *
+import shutil
 import math
 from win_post_proccessing import  *
 
@@ -142,6 +136,8 @@ class ScritptRunWin:
         self.StopButton.grid(row=cur_row,column=2,pady=5)
         self.PostProcessingButton = Button(frame, text='Post Processing', command=self.action_post_processing)
         self.PostProcessingButton.grid(row=cur_row, column=0, pady=5)
+        self.cleanDirButton = Button(frame, text='Clean Dir', command = self.action_clean_dir)
+        self.cleanDirButton.grid(row=cur_row, column=3, pady=5, padx=10)
         cur_row += 1
         self.remained_job_text = StringVar()
         self.remained_job_text.set("Remained jobs: -")
@@ -189,6 +185,13 @@ class ScritptRunWin:
         textBox.delete(1.0, END)
         textBox.insert(END, self.dict_properties[dict_attr])
         textBox['state'] = DISABLED
+
+    def action_clean_dir(self):
+        for root, dirs, files in os.walk(self.dict_properties[OUTPUT_DIR]):
+            for f in files:
+                os.unlink(os.path.join(root, f))
+            for d in dirs:
+                shutil.rmtree(os.path.join(root, d))
 
     def action_stop(self):
         self.stop = True
