@@ -88,7 +88,7 @@ class ConsoleDisplay:
                 self.show_filename_in_textbox(self.tk_txt_out,self.output)
                 break # display no more than one line per 40 milliseconds
 
-        self.tk_frame.after(10, self.update, q) # schedule next update
+        self.tk_frame.after(1, self.update, q) # schedule next update
 
     def quit(self):
         self.process.kill() # exit subprocess if GUI is closed (zombie!)
