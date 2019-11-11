@@ -11,6 +11,7 @@ tkinter package: ```apt-get install python3-tk```<br/>
 Imagetk packages: ``` sudo apt-get install python3-pil python3-pil.imagetk```<br/>
 pip3: ```sudo apt install python3-pip```<br/>
 psutil packages: ```sudo pip3 install psutil```<br/>
+pandas package: ```sudo pip3 install pandas``` <br/>
 
 Running gui open command inside /src directory: ```$: python3 main.py``` 
 
