@@ -14,6 +14,9 @@ BINARY_ATTR = "--binary"
 BINARY_DIR_ATTR = "binary_dir"
 list_of_combination_supported_attribute = [DEBUG_FLAG_ATTR,CONFIG_FILE_ATTR,NUM_THREADS_ATTR,BINARY_ATTR,BINARY_DIR_ATTR]
 
+DEFAULT_ATTR_VAL = "x"
+
+
 class pgp_parser:
 
     def __init__(self,filename,gem5_folder):
@@ -51,22 +54,26 @@ class pgp_parser:
                 print("idx: "+str(idx)+" job: "+str(job))
                 if BINARY_DIR_ATTR in job.keys():
                     job[BINARY_ATTR] = self.parse_binaries_from_given_directory(job[BINARY_DIR_ATTR])
-            #More attributes that doesn't support lists combination
-                other_attr_list = []
-                for key,val in job.items():
-                    if key not in list_of_combination_supported_attribute:
-                        other_attr_list+=[key,val]
-                self.parallel_jobs+=self.jobs_combinations_creator(exp_idx,job[DEBUG_FLAG_ATTR],job[CONFIG_FILE_ATTR],job[NUM_THREADS_ATTR],job[BINARY_ATTR],other_attr_list)
-                exp_idx += 1
+                new_jobs_list = self.jobs_combinations_creator(exp_idx,job)
+                if new_jobs_list != None:
+                    self.parallel_jobs += new_jobs_list
+                    exp_idx += 1
 
-    def jobs_combinations_creator(self,exp_id,debug_l,config_l,num_threads_l,binary_l,other_attr_list):
+    def jobs_combinations_creator(self,exp_id,Job):
+        if not CONFIG_FILE_ATTR in Job.keys():
+            print("Error - No config file attribute was given!")
+            return None
+        if not BINARY_ATTR in Job.keys():
+            print("Error - No binary file attribute was given!")
+            return None
+
+        binary_l = Job[BINARY_ATTR]
         if type(binary_l) != list:
             binary_l = [binary_l]
         parallel_jobs = []
         for binary_attr in binary_l:
-            new_job = p_job(experiment_name=str(exp_id)+"_t-"+num_threads_l+"_"+os.path.splitext(config_l)[0].split("/")[-1]+"_"+os.path.splitext(binary_attr)[0].split("/")[-1])
-            new_job.add_common_attributes(debug_l,config_l,num_threads_l,binary_attr,other_attr_list)
-
+            new_job = p_job(experiment_name="exp-"+str(exp_id)+"_"+os.path.splitext(Job[CONFIG_FILE_ATTR])[0].split("/")[-1]+"_"+os.path.splitext(binary_attr)[0].split("/")[-1])
+            new_job.add_attributes_to_job(Job)
             parallel_jobs.append(new_job)
         return parallel_jobs
 
@@ -82,12 +89,33 @@ class pgp_parser:
     def get_parallel_jobs(self):
         return self.parallel_jobs
 
+P_JOB_STATES = {"NoConfig":-1,"Created" : 0,"Done" : 1}
+
 class p_job:
     def __init__(self, processs_id = 0,experiment_name="exp",attributes = []):
         self.pid = processs_id
         self.experiment_name = experiment_name
         self.config_file = ""
         self.attributes = attributes
+        self.state = P_JOB_STATES["Created"]
+        self.experiment_name_extension = ""
+
+
+    def add_attributes_to_job(self,Job):
+        self.attributes = []
+        #find if debug attribute exists
+        self.debug_flag = "x"        #default value of debug flag
+        for key,val in Job.items():
+            if key == DEBUG_FLAG_ATTR:
+                self.debug_flag = val
+            elif key == CONFIG_FILE_ATTR:
+                self.config_file = val
+            elif key == BINARY_ATTR or key == BINARY_DIR_ATTR:
+                pass
+            else:
+                self.attributes+=[key,val]
+                self.experiment_name_extension += "_"+val+"_"
+        self.experiment_name += self.experiment_name_extension
 
     def add_common_attributes(self,debug_attr,config_attr,num_thread_attr,binary_attr,other_attributes):
         self.attributes = []
@@ -112,7 +140,14 @@ class p_job:
     def set_debug_flag(self,value):
         self.debug_flag = value
 
+    def set_state_done(self):
+        self.state = P_JOB_STATES["Done"]
+
+
     #getters
 
     def get_pid(self):
         return self.pid
+
+    def get_state(self):
+        return self.state
