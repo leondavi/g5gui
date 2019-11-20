@@ -74,9 +74,10 @@ class parallel_gem_exec():
             time.sleep(0.5)
             parent_alive = psutil.pid_exists(process.pid)
             one_of_children_alive = False
-            for child_proc in children:
-                if psutil.pid_exists(child_proc.pid):
-                    one_of_children_alive = True
+            if children != None:
+                for child_proc in children:
+                    if psutil.pid_exists(child_proc.pid):
+                        one_of_children_alive = True
             at_least_one_alive = parent_alive or one_of_children_alive
 
     def get_children_processes(self,parent_proc):
