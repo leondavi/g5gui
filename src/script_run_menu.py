@@ -196,8 +196,9 @@ class ScritptRunWin:
                 shutil.rmtree(os.path.join(root, d))
 
     def action_stop(self):
-        self.pge.kill_all_processes()
+        self.cleanDirButton['state'] = 'normal'
         self.stop = True
+        self.pge.kill_all_processes()
 
     def action_post_processing(self):
         ppw = PostProcessingRunWin(self.window,self.dict_properties,self.jobs_tracker)
@@ -224,6 +225,7 @@ class ScritptRunWin:
         self.thread.start()
 
     def jobs_processing(self,pge):
+        self.cleanDirButton['state'] = DISABLED
         while pge.get_jobs_remained() > 0 and not self.stop:
             pge.allocate_jobs_to_processes()
             pge.clear_finished_processes()
@@ -243,6 +245,7 @@ class ScritptRunWin:
                         warning_appeared_once = True
             time.sleep(0.1)
             #print("in while")
+        self.cleanDirButton['state'] = 'normal'
         self.remained_job_text.set("Remained jobs: 0")
         print("stopped")
         for bar in self.progress_bars:
