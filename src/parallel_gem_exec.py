@@ -85,9 +85,12 @@ class parallel_gem_exec():
                 for child_proc in children:
                     if psutil.pid_exists(child_proc.pid):
                         one_of_children_alive = True
+            if isinstance(children,list):
+                if len(children) == 0:
+                    os.kill(process.pid, signal.SIGKILL)
+                    parent_alive = False
             at_least_one_alive = parent_alive or one_of_children_alive
         print("Exp {} of was finished".format(job.experiment_name))
-        job.set_processs_id(None)
 
     def get_children_processes(self,parent_proc):
         try:
@@ -135,6 +138,9 @@ class parallel_gem_exec():
             if not proc.is_alive():
                 self.jobs_remain -= 1
                 self.cpp_process_pid_list[self.processes_num_list[idx]] = -1
+                for job in self.parallel_jobs:
+                    if job.get_pid() == self.processes_num_list[idx]:
+                        job.set_processs_id(None)
             else:
                 survived_clear.append(proc)
                 survived_clear_nums.append(self.processes_num_list[idx])
@@ -180,6 +186,9 @@ class parallel_gem_exec():
                 if job.get_pid() == p_idx[0]:
                     return job
         return None
+
+    def get_num_of_processes(self):
+        return self.numof_processes_avaialable
 
     # Checks
 
