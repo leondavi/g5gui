@@ -145,9 +145,12 @@ class p_job:
 
 
     #getters
-
     def get_pid(self):
         return self.pid
 
     def get_state(self):
         return self.state
+        
+    def get_experiment_name(self):
+        return self.experiment_name
+

@@ -15,6 +15,8 @@ PATH_TO_SCRIPT = 1
 OUTPUT_DIR = 2
 
 
+
+
 class ScritptRunWin:
     def __init__(self,window,previous_win_form):
         self.parent_window = window
@@ -194,6 +196,7 @@ class ScritptRunWin:
                 shutil.rmtree(os.path.join(root, d))
 
     def action_stop(self):
+        self.cleanDirButton['state'] = 'normal'
         self.stop = True
         self.pge.kill_all_processes()
 
@@ -222,17 +225,38 @@ class ScritptRunWin:
         self.thread.start()
 
     def jobs_processing(self,pge):
+        self.cleanDirButton['state'] = DISABLED
+        zero_cpu_bar_counter = 0
         while pge.get_jobs_remained() > 0 and not self.stop:
             pge.allocate_jobs_to_processes()
             pge.clear_finished_processes()
             self.remained_job_text.set("Remained jobs:" + str(pge.get_jobs_remained()))
             #updating cpu processes usage bars
             bars_cpu_usage_list = pge.get_processes_cpu_usage()
+            idle_proc = False
             for bar in bars_cpu_usage_list:
-                self.progress_bars[bar[0]][2].set(bar[1])
+                if bar[0] < self.processes_available:
+                    self.progress_bars[bar[0]][2].set(bar[1])
+                    stacked_job = pge.get_job_by_process_id([bar[0]])
+                    if bar[1] == 0 and not self.stop and stacked_job != None:
+                        idle_proc = True
+                        time.sleep(5)
+                        zero_cpu_bar_counter += 1
+                        if (zero_cpu_bar_counter > 10*pge.get_num_of_processes()) and not self.stop:
+                            stacked_job = pge.get_job_by_process_id([bar[0]])
+                            if stacked_job != None:
+                                messagebox.showwarning("Something went wrong with gem5","Process id - {} isn't responding!\nExp: {}".format(bar[0],stacked_job.get_experiment_name()),parent=self.window)
+                            else:
+                                messagebox.showwarning("Something went wrong with gem5","There is a problem with process id: {}".format(bar[0]),parent=self.window)
+                            warning_appeared_once = True
+            if not idle_proc:
+                zero_cpu_bar_counter = 0
             time.sleep(0.1)
             #print("in while")
+        self.cleanDirButton['state'] = 'normal'
         self.remained_job_text.set("Remained jobs: 0")
         print("stopped")
         for bar in self.progress_bars:
             bar[2].set(0)
+        time.sleep(2)
+        self.remained_job_text.set("Remained jobs: 0")
