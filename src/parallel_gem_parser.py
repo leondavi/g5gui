@@ -113,6 +113,8 @@ class p_job:
         self.debug_flag = value
 
     #getters
-
     def get_pid(self):
         return self.pid
+
+    def get_experiment_name(self):
+        return self.experiment_name

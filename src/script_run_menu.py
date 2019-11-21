@@ -15,6 +15,8 @@ PATH_TO_SCRIPT = 1
 OUTPUT_DIR = 2
 
 
+
+
 class ScritptRunWin:
     def __init__(self,window,previous_win_form):
         self.parent_window = window
@@ -194,8 +196,8 @@ class ScritptRunWin:
                 shutil.rmtree(os.path.join(root, d))
 
     def action_stop(self):
-        self.stop = True
         self.pge.kill_all_processes()
+        self.stop = True
 
     def action_post_processing(self):
         ppw = PostProcessingRunWin(self.window,self.dict_properties,self.jobs_tracker)
@@ -230,6 +232,15 @@ class ScritptRunWin:
             bars_cpu_usage_list = pge.get_processes_cpu_usage()
             for bar in bars_cpu_usage_list:
                 self.progress_bars[bar[0]][2].set(bar[1])
+                if bar[1] == 0 and not self.stop:
+                    time.sleep(5)
+                    if (bar[1] == 0) and not self.stop:
+                        stacked_job = pge.get_job_by_process_id([bar[0]])
+                        if stacked_job != None:
+                            messagebox.showwarning("Something went wrong with gem5","Process id - {} isn't responding!\nExp: {}".format(bar[0],stacked_job.get_experiment_name()),parent=self.window)
+                        else:
+                            messagebox.showwarning("Something went wrong with gem5","There is a problem with process id: {}".format(bar[0]),parent=self.window)
+                        warning_appeared_once = True
             time.sleep(0.1)
             #print("in while")
         self.remained_job_text.set("Remained jobs: 0")
