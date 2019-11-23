@@ -142,9 +142,13 @@ class ScritptRunWin:
         self.cleanDirButton.grid(row=cur_row, column=3, pady=5, padx=10)
         cur_row += 1
         self.remained_job_text = StringVar()
-        self.remained_job_text.set("Remained jobs: -")
+        self.remained_job_text.set("Remained Jobs: -")
+        self.total_job_text = StringVar()
+        self.total_job_text.set("Total Jobs: -")
         self.remained_jobs_label = Label(frame,textvariable=self.remained_job_text)
+        self.total_jobs_label = Label(frame,textvariable=self.total_job_text)
         self.remained_jobs_label.grid(row=cur_row, column=1, pady=2)
+        self.total_jobs_label.grid(row=cur_row,column=2,pady=2,padx=2)
         cur_row += 1
         return cur_row
 
@@ -224,7 +228,8 @@ class ScritptRunWin:
         if self.default_out_dir_var.get() == 0:
             out_dir=self.dict_properties[OUTPUT_DIR]
         self.pge = parallel_gem_exec(pgp_p.get_parallel_jobs(),self.form_dict,out_dir,self.processes_available)
-        self.remained_job_text.set("Remained jobs:" + str(self.pge.get_jobs_remained()))
+        self.remained_job_text.set("Remained Jobs:" + str(self.pge.get_jobs_remained()))
+        self.total_job_text.set("Total Jobs: " + str(self.pge.get_jobs_remained()))
         self.thread = threading.Thread(target=self.jobs_processing, args=[self.pge])
         self.thread.start()
 
@@ -235,7 +240,7 @@ class ScritptRunWin:
         while pge.get_jobs_remained() > 0 and not self.stop:
             pge.allocate_jobs_to_processes()
             pge.clear_finished_processes()
-            self.remained_job_text.set("Remained jobs:" + str(pge.get_jobs_remained()))
+            self.remained_job_text.set("Remained Jobs:" + str(pge.get_jobs_remained()))
             #updating cpu processes usage bars
             bars_cpu_usage_list = pge.get_processes_cpu_usage()
             idle_proc = False
@@ -260,9 +265,9 @@ class ScritptRunWin:
             #print("in while")
         self.cleanDirButton['state'] = 'normal'
         self.PostProcessingButton['state'] = 'normal'
-        self.remained_job_text.set("Remained jobs: 0")
+        self.remained_job_text.set("Remained Jobs: 0")
         print("stopped")
         for bar in self.progress_bars:
             bar[2].set(0)
         time.sleep(2)
-        self.remained_job_text.set("Remained jobs: 0")
+        self.remained_job_text.set("Remained Jobs: 0")
