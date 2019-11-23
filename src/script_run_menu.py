@@ -247,18 +247,18 @@ class ScritptRunWin:
             for bar in bars_cpu_usage_list:
                 if bar[0] < self.processes_available:
                     self.progress_bars[bar[0]][2].set(bar[1])
-                    stacked_job = pge.get_job_by_process_id([bar[0]])
-                    if bar[1] == 0 and not self.stop and stacked_job != None:
-                        idle_proc = True
-                        time.sleep(5)
-                        zero_cpu_bar_counter += 1
-                        if (zero_cpu_bar_counter > 10*pge.get_num_of_processes()) and not self.stop:
-                            stacked_job = pge.get_job_by_process_id([bar[0]])
-                            if stacked_job != None:
-                                messagebox.showwarning("Something went wrong with gem5","Process id - {} isn't responding!\nExp: {}".format(bar[0],stacked_job.get_experiment_name()),parent=self.window)
-                            else:
-                                messagebox.showwarning("Something went wrong with gem5","There is a problem with process id: {}".format(bar[0]),parent=self.window)
-                            warning_appeared_once = True
+                    # stacked_job = pge.get_job_by_process_id([bar[0]])
+                    # if bar[1] == 0 and not self.stop and stacked_job != None:
+                    #     idle_proc = True
+                    #     time.sleep(5)
+                    #     zero_cpu_bar_counter += 1
+                    #     if (zero_cpu_bar_counter > 10*pge.get_num_of_processes()) and not self.stop:
+                    #         stacked_job = pge.get_job_by_process_id([bar[0]])
+                    #         if stacked_job != None:
+                    #             messagebox.showwarning("Something went wrong with gem5","Process id - {} isn't responding!\nExp: {}".format(bar[0],stacked_job.get_experiment_name()),parent=self.window)
+                    #         else:
+                    #             messagebox.showwarning("Something went wrong with gem5","There is a problem with process id: {}".format(bar[0]),parent=self.window)
+                    #         warning_appeared_once = True
             if not idle_proc:
                 zero_cpu_bar_counter = 0
             time.sleep(0.1)
