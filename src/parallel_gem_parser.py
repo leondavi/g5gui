@@ -73,7 +73,7 @@ class pgp_parser:
         parallel_jobs = []
         for binary_attr in binary_l:
             new_job = p_job(experiment_name="exp-"+str(exp_id)+"_"+os.path.splitext(Job[CONFIG_FILE_ATTR])[0].split("/")[-1]+"_"+os.path.splitext(binary_attr)[0].split("/")[-1])
-            new_job.add_attributes_to_job(Job)
+            new_job.add_attributes_to_job(Job,binary_attr)
             parallel_jobs.append(new_job)
         return parallel_jobs
 
@@ -101,7 +101,7 @@ class p_job:
         self.experiment_name_extension = ""
 
 
-    def add_attributes_to_job(self,Job):
+    def add_attributes_to_job(self,Job,binary_file):
         self.attributes = []
         #find if debug attribute exists
         self.debug_flag = "x"        #default value of debug flag
@@ -110,7 +110,9 @@ class p_job:
                 self.debug_flag = val
             elif key == CONFIG_FILE_ATTR:
                 self.config_file = val
-            elif key == BINARY_ATTR or key == BINARY_DIR_ATTR:
+            elif key == BINARY_ATTR:
+                self.attributes+=[key,binary_file]
+            elif key == BINARY_DIR_ATTR:
                 pass
             else:
                 self.attributes+=[key,val]
