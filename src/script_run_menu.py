@@ -196,8 +196,12 @@ class ScritptRunWin:
                 shutil.rmtree(os.path.join(root, d))
 
     def action_stop(self):
+        # Turn back clean and postprocessing buttons
         self.cleanDirButton['state'] = 'normal'
+        self.PostProcessingButton['state'] = 'normal'
+        #update stop flag as true
         self.stop = True
+        #kill  all monitors and their children processes
         self.pge.kill_all_processes()
 
     def action_post_processing(self):
@@ -226,6 +230,7 @@ class ScritptRunWin:
 
     def jobs_processing(self,pge):
         self.cleanDirButton['state'] = DISABLED
+        self.PostProcessingButton['state'] = DISABLED
         zero_cpu_bar_counter = 0
         while pge.get_jobs_remained() > 0 and not self.stop:
             pge.allocate_jobs_to_processes()
@@ -254,6 +259,7 @@ class ScritptRunWin:
             time.sleep(0.1)
             #print("in while")
         self.cleanDirButton['state'] = 'normal'
+        self.PostProcessingButton['state'] = 'normal'
         self.remained_job_text.set("Remained jobs: 0")
         print("stopped")
         for bar in self.progress_bars:
