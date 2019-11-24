@@ -193,11 +193,16 @@ class ScritptRunWin:
         textBox['state'] = DISABLED
 
     def action_clean_dir(self):
-        for root, dirs, files in os.walk(self.dict_properties[OUTPUT_DIR]):
-            for f in files:
-                os.unlink(os.path.join(root, f))
-            for d in dirs:
-                shutil.rmtree(os.path.join(root, d))
+        MsgBox = tk.messagebox.askquestion('Delete Statistics', 'Are you sure you want to delete the content of your statitistics directory?',
+                                           icon='warning',parent=self.window)
+        if MsgBox == 'yes':
+            for root, dirs, files in os.walk(self.dict_properties[OUTPUT_DIR]):
+                for f in files:
+                    os.unlink(os.path.join(root, f))
+                for d in dirs:
+                    shutil.rmtree(os.path.join(root, d))
+        else:
+            pass
 
     def action_stop(self):
         # Turn back clean and postprocessing buttons
