@@ -140,7 +140,7 @@ class ScritptRunWin:
         self.PostProcessingButton.grid(row=cur_row, column=0, pady=5)
         self.cleanDirButton = Button(frame, text='Clean Dir', command = self.action_clean_dir)
         self.cleanDirButton.grid(row=cur_row, column=3, pady=5, padx=10)
-        self.cleanEmptyStatsButton = Button(frame, text='Remove Stats Empty', command=self.action_clean_dirs_with_empty_stats)
+        self.cleanEmptyStatsButton = Button(frame, text='Remove Empty Stats', command=self.action_clean_dirs_with_empty_stats)
         self.cleanEmptyStatsButton.grid(row=cur_row, column=3, pady=5, padx=10)
         cur_row += 1
         self.remained_job_text = StringVar()
