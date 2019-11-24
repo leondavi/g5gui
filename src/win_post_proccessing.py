@@ -21,8 +21,6 @@ CSV_FILE_NAME = "stats_combined_results"
 
 JOB_TRACK_ATTRIBUTES = ["-num-threads","--binary"]
 
-FAILURE_INDICATOR_ATTR = "F"
-
 
 class PostProcessingRunWin():
     def __init__(self, window, previous_win_form,jobs_tracker_file):
@@ -101,7 +99,6 @@ class stats_extractor():
         self.root_dir = root_dir
         self.attributes_to_extract = attributes_to_extract
         self.jobs_tracker_file = jobs_tracker_file
-        self.attributes_to_extract.append(FAILURE_INDICATOR_ATTR)
 
     def generate_csv(self):
 
@@ -168,10 +165,6 @@ class stats_extractor():
 
     def extract_stats_attributes(self,filename):
         attributes_list = []
-        if os.stat(filename).st_size == 0:
-            for attribute in self.attributes_to_extract:
-                attributes_list.append(("F","1"))
-            return attributes_list
         fo = open(filename,"r")
         lines = fo.readlines()
         dots_pattern = re.compile("^\w+(\.\w+)*$")
