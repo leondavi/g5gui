@@ -2,6 +2,7 @@
 import ast
 import os
 import itertools
+import re
 
 ERROR_DEF = -1
 SUCCESS_DEF = 0
@@ -116,7 +117,9 @@ class p_job:
                 pass
             else:
                 self.attributes+=[key,val]
-                self.experiment_name_extension += "_"+val+"_"
+                key_e = re.sub(r'^--','',key)
+                key_e = re.sub(r'-','_',key_e)
+                self.experiment_name_extension += "_"+key_e+"_"+val+"_"
         self.experiment_name += self.experiment_name_extension
 
     def add_common_attributes(self,debug_attr,config_attr,num_thread_attr,binary_attr,other_attributes):

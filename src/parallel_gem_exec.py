@@ -107,7 +107,7 @@ class parallel_gem_exec():
         #adding gem5 exec file
         command_string += self.gem5_exec_file_str
         #adding output dir as job name:
-        command_string += " --outdir="+self.output_dir+"/p-"+str(job.get_pid())+"_"+job.experiment_name+"_"+st+" "
+        command_string += " --outdir="+self.output_dir+"/"+job.experiment_name #+"_"+st+" "
         if job.debug_flag != "x":
             command_string += " --debug-flag="+job.debug_flag+" "
         command_string += " " + job.config_file+" "
