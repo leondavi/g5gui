@@ -140,6 +140,8 @@ class ScritptRunWin:
         self.PostProcessingButton.grid(row=cur_row, column=0, pady=5)
         self.cleanDirButton = Button(frame, text='Clean Dir', command = self.action_clean_dir)
         self.cleanDirButton.grid(row=cur_row, column=3, pady=5, padx=10)
+        self.cleanEmptyStatsButton = Button(frame, text='Remove Stats Empty', command=self.action_clean_dirs_with_empty_stats)
+        self.cleanEmptyStatsButton.grid(row=cur_row, column=3, pady=5, padx=10)
         cur_row += 1
         self.remained_job_text = StringVar()
         self.remained_job_text.set("Remained Jobs: -")
@@ -201,6 +203,19 @@ class ScritptRunWin:
                     os.unlink(os.path.join(root, f))
                 for d in dirs:
                     shutil.rmtree(os.path.join(root, d))
+        else:
+            pass
+
+    def action_clean_dirs_with_empty_stats(self):
+        MsgBox = tk.messagebox.askquestion('Delete Empty Statitstics',
+                                           'Are you sure you want to delete all the folders with empty stats.txt files??',
+                                           icon='warning', parent=self.window)
+        if MsgBox == 'yes':
+            for root, dirs, files in os.walk(self.dict_properties[OUTPUT_DIR]):
+                for d in dirs:
+                    for file in os.listdir(os.path.join(root, d)):
+                        if (file == "stats.txt") and (os.stat(os.path.join(root, d,file)).st_size == 0):
+                            shutil.rmtree(os.path.join(root, d))
         else:
             pass
 
