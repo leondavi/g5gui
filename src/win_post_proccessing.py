@@ -54,8 +54,10 @@ class PostProcessingRunWin():
         self.set_text_textbox(self.txt_box,seperator.join(self.dict_properties[ATTRIBUTES_TO_EXTRACT_LIST]))
 
         self.label_txtvar = StringVar()
-        self.generate_button = Button(self.frameTop,text="Generate",command=self.action_generate)
-        self.generate_button.grid(row=2)
+        self.generate_button = Button(self.frameMiddle,text="Generate",command=self.action_generate)
+        self.generate_button.grid(row=2,column=0,padx=2)
+        self.generate_failure_pgp = Button(self.frameMiddle, text="Generate Failures pgp", command=self.action_generate_failures_pgp)
+        self.generate_failure_pgp.grid(row=2,column=1,padx=2)
         self.generate_status_label = Label(self.frameTop,textvar=self.label_txtvar).grid(row=3)
         self.label_txtvar.set("Ready")
 
@@ -67,12 +69,13 @@ class PostProcessingRunWin():
         self.retrieve_input_from_txtbox()
         extractor = stats_extractor(self.output_dir,self.dict_properties[ATTRIBUTES_TO_EXTRACT_LIST],self.jobs_tracker_file )
         extractor.generate_csv()
-        self.label_txtvar.set("Generated")
         self.generate_button.config(state = DISABLED)
         time.sleep(3)
         self.generate_button.config(state = NORMAL)
-        self.label_txtvar.set("Ready")
+        self.label_txtvar.set("Generated")
 
+    def action_generate_failures_pgp(self):
+        pass
 
     def retrieve_input_from_txtbox(self):
         inputValue = self.txt_box.get("1.0", "end-1c")
