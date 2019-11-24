@@ -162,18 +162,19 @@ class parallel_gem_exec():
             cpu_usage = 0
             if pid!=-1 :
                 if(psutil.pid_exists(pid)):
-                    p = psutil.Process(pid)
-                    sub_p = subprocess.Popen("top -b -n 1 -p %d -d 10 | tail -n 1 | head -n 1 | awk '{print $1, $9}'" % pid,
-                                                     shell=True,stdout=subprocess.PIPE)
-                    cpu_percentage = sub_p.stdout.read()
-                    #time.sleep(0.1)
-                    if len(cpu_percentage) > 1:
-                        try:
-                            cpu_usage = int(float(cpu_percentage.decode("utf-8").replace("\n", "").split(" ")[1]))
-                        except ValueError:
-                            cpu_usage = 0
-                    else:
-                        cpu_usage = 0
+                    proc_pid = psutil.Process(pid)
+                    try:
+                        proc_pid.cpu_percent(interval=None)
+                        proc_data = {"pid": proc_pid.pid,
+                        "status": proc_pid.status(),
+                        "percent_cpu_used": proc_pid.cpu_percent(interval=0.2),
+                        "percent_memory_used": proc_pid.memory_percent()}
+                    except (psutil.ZombieProcess, psutil.AccessDenied, psutil.NoSuchProcess):
+                        proc_data = None
+
+                    if proc_data != None:#len(cpu_percentage) > 1:
+                        cpu_usage = proc_data["percent_cpu_used"]
+                 
                 if idx < len(self.processes_num_list):
                     processes_cpu_usage_list[self.processes_num_list[idx]]=((self.processes_num_list[idx],cpu_usage))
         return processes_cpu_usage_list # process ids [which id] --> tuple (process id,cpu usage)
