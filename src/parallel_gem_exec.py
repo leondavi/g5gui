@@ -22,7 +22,6 @@ class parallel_gem_exec():
         self.processes_list = []
         self.processes_num_list = []
         self.processes_available_list = self.processes_list
-        self.jobs_remain = len(parallel_jobs)
         self.job_iterator = 0
         self.gem5_dir_str = form_dict[BUILD_DIR]
         self.gem5_exec_file_str = form_dict[GEM5_EXECUTE_FILE]
@@ -38,7 +37,7 @@ class parallel_gem_exec():
         else: #doesn't exist
             self.jobs_track_file = open(self.jobs_tracker, "w+")
         self.clear_finished_processes()
-        while self.available_processes_Q() and self.jobs_remain > 0 and self.job_iterator<len(self.parallel_jobs):
+        while self.available_processes_Q() and self.job_iterator<len(self.parallel_jobs):
             self.processes_num_list.append(self.assign_proc_num())
             self.processes_num_list[-1]
             self.parallel_jobs[self.job_iterator]
@@ -71,7 +70,6 @@ class parallel_gem_exec():
                             os.kill(child_proc.pid,signal.SIGKILL)
                 os.kill(proc.pid,signal.SIGKILL)
         os.system("killall gem5.opt")
-        self.jobs_remain = 0
         self.parallel_jobs = []
 
     def task(self,job,process):
@@ -136,7 +134,6 @@ class parallel_gem_exec():
         for idx,proc in enumerate(self.processes_list):
             proc.join(timeout=0)
             if not proc.is_alive():
-                self.jobs_remain -= 1
                 self.cpp_process_pid_list[self.processes_num_list[idx]] = -1
                 for job in self.parallel_jobs:
                     if job.get_pid() == self.processes_num_list[idx]:
@@ -152,7 +149,10 @@ class parallel_gem_exec():
 
     # Getters
     def get_jobs_remained(self):
-        return self.jobs_remain
+        remained = len(self.parallel_jobs)-self.job_iterator
+        if remained < 0:
+            return 0
+        return len(self.parallel_jobs)-self.job_iterator
 
     def get_processes_cpu_usage(self):
         processes_cpu_usage_list = list(range(0,self.numof_processes_avaialable))
@@ -193,7 +193,7 @@ class parallel_gem_exec():
     # Checks
 
     def jobs_remained_Q(self):
-        return self.jobs_remain > 0
+        return self.job_iterator < len(self.parallel_jobs)
 
     def available_processes_Q(self):
         return len(self.processes_list) < self.numof_processes_avaialable
