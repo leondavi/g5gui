@@ -240,9 +240,12 @@ class ScritptRunWin:
         if MsgBox == 'yes':
             for root, dirs, files in os.walk(self.dict_properties[OUTPUT_DIR]):
                 for d in dirs:
-                    for file in os.listdir(os.path.join(root, d)):
-                        if (file == "stats.txt") and (os.stat(os.path.join(root, d,file)).st_size == 0):
-                            shutil.rmtree(os.path.join(root, d))
+                    if len(os.listdir(os.path.join(root,d))) == 0 :
+                        os.rmdir(os.path.join(root,d))
+                    elif os.path.exists(os.path.join(root,d)):
+                        for file in os.listdir(os.path.join(root, d)):
+                            if (file == "stats.txt") and (os.stat(os.path.join(root, d,file)).st_size == 0):
+                                shutil.rmtree(os.path.join(root, d))
         else:
             pass
 
