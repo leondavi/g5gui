@@ -6,6 +6,9 @@ import threading
 import shutil
 import math
 from win_post_proccessing import  *
+import json
+from files_management import *
+from definitions import *
 
 SCRIPT_RUN_MENU_WINSIZE = "800x750"
 USER_PROPERTIES_FILE = "script_prop"
@@ -14,6 +17,7 @@ DEFAULT_OUTPUT_DIR = "statistics"
 PATH_TO_SCRIPT = 1
 OUTPUT_DIR = 2
 
+PARALLEL_JOBS_LIST_FILE = "pjl"
 
 
 
@@ -27,6 +31,11 @@ class ScritptRunWin:
         self.dict_properties[PATH_TO_SCRIPT] = ""
         self.dict_properties[OUTPUT_DIR] = DEFAULT_OUTPUT_DIR
 
+        self.pge = None
+        if check_file_exist(PARALLEL_JOBS_LIST_FILE):
+            self.parallel_jobs_list = load_obj(PARALLEL_JOBS_LIST_FILE)
+        else:
+            self.parallel_jobs_list = []
         #Load params
         if check_file_exist(USER_PROPERTIES_FILE):
             self.dict_properties = load_obj(USER_PROPERTIES_FILE)
@@ -132,16 +141,19 @@ class ScritptRunWin:
     def add_buttons(self,frame):
 
         cur_row = 0
+        self.PostProcessingButton = Button(frame, text='Post Processing', command=self.action_post_processing)
+        self.PostProcessingButton.grid(row=cur_row, column=0, pady=5)
         self.RunButton = Button(frame, text='Run', command = self.action_run)
         self.RunButton.grid(row=cur_row,column=1,pady=5)
         self.StopButton = Button(frame, text='Stop', command = self.action_stop)
         self.StopButton.grid(row=cur_row,column=2,pady=5)
-        self.PostProcessingButton = Button(frame, text='Post Processing', command=self.action_post_processing)
-        self.PostProcessingButton.grid(row=cur_row, column=0, pady=5)
         self.cleanDirButton = Button(frame, text='Clean Dir', command = self.action_clean_dir)
-        self.cleanDirButton.grid(row=cur_row, column=3, pady=5, padx=10)
+        self.cleanDirButton.grid(row=cur_row, column=3, pady=5, padx=5)
         self.cleanEmptyStatsButton = Button(frame, text='Remove Empty Stats', command=self.action_clean_dirs_with_empty_stats)
-        self.cleanEmptyStatsButton.grid(row=cur_row, column=3, pady=5, padx=10)
+        self.cleanEmptyStatsButton.grid(row=cur_row, column=4, pady=5, padx=5)
+        self.pgpRegenrateButton = Button(frame, text='pgpReg',
+                                            command=self.action_pgp_regenerate)
+        self.pgpRegenrateButton.grid(row=cur_row, column=5, pady=5, padx=5)
         cur_row += 1
         self.remained_job_text = StringVar()
         self.remained_job_text.set("Remained Jobs: -")
@@ -206,6 +218,21 @@ class ScritptRunWin:
         else:
             pass
 
+
+    #regenrates pgp of fails
+    def action_pgp_regenerate(self):
+        pgp_list = []
+        if self.pge != None:
+            self.pge.update_jobs_status()
+        if len(self.parallel_jobs_list) > 0 :
+            for i,job in enumerate(self.parallel_jobs_list):
+                if job.is_state_failed():
+                    pgp_list.append(job.job_to_dict_format())
+            with open(os.path.join(self.dict_properties[OUTPUT_DIR],FILENAME_PGP_FAILURES),'w') as fout:
+                json.dump(pgp_list,fout)
+        save_obj(self.parallel_jobs_list,PARALLEL_JOBS_LIST_FILE)
+
+
     def action_clean_dirs_with_empty_stats(self):
         MsgBox = tk.messagebox.askquestion('Delete Empty Statitstics',
                                            'Are you sure you want to delete all the folders with empty stats.txt files??',
@@ -227,9 +254,11 @@ class ScritptRunWin:
         self.stop = True
         #kill  all monitors and their children processes
         self.pge.kill_all_processes()
+        self.pge.update_jobs_status()
+        save_obj(self.parallel_jobs_list,PARALLEL_JOBS_LIST_FILE)
 
     def action_post_processing(self):
-        ppw = PostProcessingRunWin(self.window,self.dict_properties,self.jobs_tracker)
+        ppw = PostProcessingRunWin(self.window,self.dict_properties,self.parallel_jobs_list)
         ppw.generate_sub_window()
 
         pass
@@ -247,7 +276,9 @@ class ScritptRunWin:
         out_dir = os.path.join(self.gem5_build_dir_str,DEFAULT_OUTPUT_DIR)
         if self.default_out_dir_var.get() == 0:
             out_dir=self.dict_properties[OUTPUT_DIR]
-        self.pge = parallel_gem_exec(pgp_p.get_parallel_jobs(),self.form_dict,out_dir,self.processes_available)
+
+        self.parallel_jobs_list = pgp_p.get_parallel_jobs()
+        self.pge = parallel_gem_exec(self.parallel_jobs_list,self.form_dict,out_dir,self.processes_available)
         self.remained_job_text.set("Remained Jobs:" + str(self.pge.get_jobs_remained()))
         self.total_job_text.set("Total Jobs: " + str(self.pge.get_jobs_remained()))
         self.thread = threading.Thread(target=self.jobs_processing, args=[self.pge])

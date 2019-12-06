@@ -8,3 +8,5 @@ DebugModes = ['FlexCPUAll','FlexCPUCoreEvent', 'FlexCPUInstEvent','FlexCPUThread
 DEBUG_OPTION = "--debug-flags"
 
 RADIO_SELECITON_FILE = "rd_selected"
+
+FILENAME_PGP_FAILURES = "pgp_of_failures.pgp"

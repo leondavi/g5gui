@@ -18,7 +18,7 @@ from script_run_menu import *
 
 from consoleCommands import ConsoleDisplay
 
-GUI_VERSION = 0.06
+GUI_VERSION = 1.01
 BUTTON_ENDING_ROW = 4
 
 def update_dict(Dictionary,Key,Value):

@@ -90,7 +90,7 @@ class pgp_parser:
     def get_parallel_jobs(self):
         return self.parallel_jobs
 
-P_JOB_STATES = {"NoConfig":-1,"Created" : 0,"Done" : 1}
+P_JOB_STATES = {"NoConfig":-1,"Created" : 0,"Done" : 1,"Failed" : 2}
 
 class p_job:
     def __init__(self, processs_id = 0,experiment_name="exp",attributes = []):
@@ -100,9 +100,15 @@ class p_job:
         self.attributes = attributes
         self.state = P_JOB_STATES["Created"]
         self.experiment_name_extension = ""
+        self.output_dir = ""
+        self.Job_orig = None
+
+    def job_to_dict_format(self):
+        return self.Job_orig
 
 
     def add_attributes_to_job(self,Job,binary_file):
+        self.Job_orig = Job
         self.attributes = []
         #find if debug attribute exists
         self.debug_flag = "x"        #default value of debug flag
@@ -148,6 +154,12 @@ class p_job:
     def set_state_done(self):
         self.state = P_JOB_STATES["Done"]
 
+    def set_state_failed(self):
+        self.state = P_JOB_STATES["Failed"]
+
+    def set_output_dir(self,path):
+        self.output_dir = path
+
 
     #getters
     def get_pid(self):
@@ -159,3 +171,11 @@ class p_job:
     def get_experiment_name(self):
         return self.experiment_name
 
+    def get_output_dir(self):
+        return self.output_dir
+
+    def is_state_done(self):
+        return self.state == P_JOB_STATES["Done"]
+
+    def is_state_failed(self):
+        return self.state == P_JOB_STATES["Failed"]

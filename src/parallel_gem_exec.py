@@ -13,6 +13,7 @@ import subprocess
 import time
 from time import gmtime, strftime
 
+STATS_FILE = "stats.txt"
 JOBS_TRACKING_FILE = "job_tracker.txt"
 
 class parallel_gem_exec():
@@ -59,6 +60,15 @@ class parallel_gem_exec():
             monitor_proc.start()
             self.jobs_track_file.write(strftime("%Y-%m-%d %H:%M:%S", gmtime())+" job: "+job.experiment_name+" cmd: "+command_string+"\n")
         self.jobs_track_file.close()
+        self.update_jobs_status()
+
+    def update_jobs_status(self):
+        for job in self.parallel_jobs:
+            if self.check_stats_file_valid(job):
+                job.set_state_done()
+            else:
+                job.set_state_failed()
+
 
     def kill_all_processes(self):
         for proc in self.processes_list:
@@ -90,6 +100,15 @@ class parallel_gem_exec():
             at_least_one_alive = parent_alive or one_of_children_alive
         print("Exp {} of was finished".format(job.experiment_name))
 
+    @staticmethod
+    def check_stats_file_valid(job):
+        stats_file = os.path.join(job.get_output_dir(),STATS_FILE)
+        if os.path.exists(stats_file):
+            if os.stat(stats_file).st_size == 0:
+                return False
+            return True
+        return False
+
     def get_children_processes(self,parent_proc):
         try:
             parent = psutil.Process(parent_proc.pid)
@@ -105,7 +124,9 @@ class parallel_gem_exec():
         #adding gem5 exec file
         command_string += self.gem5_exec_file_str
         #adding output dir as job name:
-        command_string += " --outdir="+self.output_dir+"/"+job.experiment_name #+"_"+st+" "
+        output_path = self.output_dir+"/"+job.experiment_name
+        command_string += " --outdir="+output_path #+"_"+st+" "
+        job.set_output_dir(output_path) #+"_"+st+" "
         if job.debug_flag != "x":
             command_string += " --debug-flag="+job.debug_flag+" "
         command_string += " " + job.config_file+" "
@@ -190,6 +211,9 @@ class parallel_gem_exec():
 
     def get_num_of_processes(self):
         return self.numof_processes_avaialable
+
+    def get_output_dir(self):
+        return self.output_dir
 
     # Checks
 
