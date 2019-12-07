@@ -9,7 +9,7 @@ from files_management import *
 from scrframe import *
 import pandas as pd
 import re
-from support import *
+from datetime import datetime
 import time
 
 USER_PROPERTIES_FILE = "post_proc_prop"
@@ -147,30 +147,7 @@ class stats_extractor():
 
     def generate_csv(self):
 
-        jobs_dict = dict()
         params_headers = []
-        first_file_flag = True
-        # Loading jobs from jobs tracker
-        # track_file_fo = open(self.jobs_tracker_file,"r")
-        # for line in track_file_fo.readlines():
-        #     attributes_in_line = line.split()
-        #     jobs_dict_key = "" #should be the outdir
-        #     for param_attribute in attributes_in_line:
-        #         pattern = re.compile("--+\w+=")
-        #         pattern2 = re.compile("(--\w+)-+\w+=")
-        #         if pattern.match(param_attribute) or pattern2.match(param_attribute):
-        #             param = param_attribute.split("=")
-        #             if param[0]=="--outdir":
-        #                 jobs_dict_key = param[-1].split("/")[-1]
-        #             elif param[0]=="--binary":
-        #                 app = param[1].split("/")[-1]
-        #                 dict_update_key_multival(jobs_dict,jobs_dict_key,(param[0],app))
-        #             else:
-        #                 dict_update_key_multival(jobs_dict,jobs_dict_key,(param[0],param[1]))
-        #                 if first_file_flag:
-        #                     params_headers.append(param[0])
-        #     first_file_flag = False
-
 
         reduced_attributees = []
         for attr in self.attributes_to_extract:
@@ -204,31 +181,8 @@ class stats_extractor():
         df_convert_obj = rows_of_data_to_pandasDF(rows)
         df = df_convert_obj.get_pandasDF()
 
-    #     # getting all stats files
-    #     for root, directories, filenames in os.walk(self.root_dir):
-    #         # for directory in directories:
-    #         #     print(os.path.join(root, directory))
-    #
-    #         for filename in filenames:
-    #             if filename == "stats.txt":
-    #                 #Tuple: (directory,fullpathtofile,stats_attr)
-    #                 self.stats_files_list.append(os.path.join(root,filename))
-    #                 current_attributes = self.extract_stats_attributes(self.stats_files_list[-1])
-    #                 curr_dir = root.split("/")[-1]
-    #                 if (len(current_attributes) > 0) and (curr_dir in jobs_dict.keys()):
-    #                     row_list = []
-    #                     #generate table row
-    #                     list_of_param_attributes = jobs_dict[curr_dir]
-    #                     for attribute in list_of_param_attributes:
-    #                         row_list.append(attribute[1])
-    #                     tmplist = [0]*len(self.attributes_to_extract)
-    #                     for attribute in current_attributes:
-    #                         tmplist[self.attributes_to_extract.index(attribute[0])] = attribute[1]
-    #                     row_list+=tmplist
-    # #modDfObj = dfObj.append(pd.Series(['Raju', 21, 'Bangalore', 'India'], index=dfObj.columns ), ignore_index=True)
-    #                     df = df.append(pd.Series(row_list,index=df.columns),ignore_index=True)
-
-        df.to_csv(os.path.join(self.root_dir,CSV_FILE_NAME)+".csv")
+        now = datetime.now()
+        df.to_csv(os.path.join(self.root_dir,CSV_FILE_NAME)+"_"+now.strftime("%d-%m-%Y_%H-%M-%S")+".csv")
 
 
 

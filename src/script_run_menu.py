@@ -9,6 +9,7 @@ from win_post_proccessing import  *
 import json
 from files_management import *
 from definitions import *
+from support import *
 
 SCRIPT_RUN_MENU_WINSIZE = "800x750"
 USER_PROPERTIES_FILE = "script_prop"
