@@ -107,8 +107,10 @@ class p_job:
         return self.Job_orig
 
 
+
     def add_attributes_to_job(self,Job,binary_file):
-        self.Job_orig = Job
+        self.Job_orig = Job.copy()
+        self.Job_orig[BINARY_ATTR] = binary_file
         self.attributes = []
         #find if debug attribute exists
         self.debug_flag = "x"        #default value of debug flag
@@ -116,6 +118,7 @@ class p_job:
             if key == DEBUG_FLAG_ATTR:
                 self.debug_flag = val
             elif key == CONFIG_FILE_ATTR:
+                self.Job_orig[CONFIG_FILE_ATTR] = val
                 self.config_file = val
             elif key == BINARY_ATTR:
                 self.attributes+=[key,binary_file]
@@ -173,6 +176,9 @@ class p_job:
 
     def get_output_dir(self):
         return self.output_dir
+
+    def is_state_created(self):
+        return self.state == P_JOB_STATES["Created"]
 
     def is_state_done(self):
         return self.state == P_JOB_STATES["Done"]

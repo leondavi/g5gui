@@ -168,6 +168,9 @@ class stats_extractor():
                         r_dat.post_proc_attribtues_val.append(attr[1])
                 r_dat.experiment_attributes.append("state")
                 r_dat.experiment_attributes_val.append("D")
+            elif job.is_state_created():
+                r_dat.experiment_attributes.append("state")
+                r_dat.experiment_attributes_val.append("C")
             else:
                 r_dat.experiment_attributes.append("state")
                 r_dat.experiment_attributes_val.append("F")
