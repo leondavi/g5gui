@@ -292,7 +292,7 @@ class ScritptRunWin:
         self.cleanDirButton['state'] = DISABLED
         self.PostProcessingButton['state'] = DISABLED
         zero_cpu_bar_counter = 0
-        while pge.get_jobs_remained() > 0 and not self.stop:
+        while ((pge.get_jobs_remained() > 0) or (pge.get_still_processing())) and not self.stop:
             pge.allocate_jobs_to_processes()
             pge.clear_finished_processes()
             self.remained_job_text.set("Remained Jobs:" + str(pge.get_jobs_remained()))

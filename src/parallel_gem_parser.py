@@ -3,6 +3,7 @@ import ast
 import os
 import itertools
 import re
+from configparser import BasicInterpolation
 
 ERROR_DEF = -1
 SUCCESS_DEF = 0
@@ -103,7 +104,9 @@ class p_job:
         self.output_dir = ""
         self.Job_orig = None
 
-    def job_to_dict_format(self):
+    def job_to_dict_format(self,with_bin_dir=False):
+        if not with_bin_dir:
+            self.Job_orig.pop(BINARY_DIR_ATTR,None)
         return self.Job_orig
 
 

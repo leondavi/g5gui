@@ -175,7 +175,7 @@ class stats_extractor():
                 r_dat.experiment_attributes.append("state")
                 r_dat.experiment_attributes_val.append("F")
 
-            for key,val in job.job_to_dict_format().items():
+            for key,val in job.job_to_dict_format(with_bin_dir=True).items():
                 r_dat.experiment_attributes.append(key)
                 r_dat.experiment_attributes_val.append(val)
 

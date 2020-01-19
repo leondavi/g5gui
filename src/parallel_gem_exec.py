@@ -29,6 +29,7 @@ class parallel_gem_exec():
         self.output_dir = output_dir
         self.cpp_process_pid_list = [-1]*numof_processes_avaialable
         self.jobs_tracker = os.path.join(self.output_dir, JOBS_TRACKING_FILE)
+        self.still_processing = False
 
 
     def allocate_jobs_to_processes(self):
@@ -175,10 +176,13 @@ class parallel_gem_exec():
             return 0
         return len(self.parallel_jobs)-self.job_iterator
 
+    def get_still_processing(self):
+        return self.still_processing
     def get_processes_cpu_usage(self):
         processes_cpu_usage_list = list(range(0,self.numof_processes_avaialable))
         for idx,proc_attr in enumerate(processes_cpu_usage_list):
             processes_cpu_usage_list[idx] = (idx,0)
+        cpu_usage_acc = 0
         for idx,pid in enumerate(self.cpp_process_pid_list):
             cpu_usage = 0
             if pid!=-1 :
@@ -198,6 +202,11 @@ class parallel_gem_exec():
                  
                 if idx < len(self.processes_num_list):
                     processes_cpu_usage_list[self.processes_num_list[idx]]=((self.processes_num_list[idx],cpu_usage))
+            cpu_usage_acc = cpu_usage_acc + cpu_usage
+        if cpu_usage_acc > 0:
+            self.still_processing = True
+        else:
+            self.still_processing = False
         return processes_cpu_usage_list # process ids [which id] --> tuple (process id,cpu usage)
 
     def get_job_by_process_id(self,p_idx):
