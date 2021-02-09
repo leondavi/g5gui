@@ -1,6 +1,5 @@
 # g5gui
-gem5 simulator gui
-In early development stage. 
+Running multiple GEM5 simulations in parallel using g5gui
 Developed for MinorCPU/FlexCPU and RISCV
 g5gui is able to run multiple gem5 instances over multiple processes,
 It takes care for job scheduling and results saving. 
